@@ -2,12 +2,13 @@ import time
 import math
 import json
 import logging
+import numpy as np
+from pubsub import pub
 
 logger = logging.getLogger('processor')
 
 class Processor:
     def __init__(self):
-        self._emit_every = 100
         self._instances = list()
 
     def listener(self, ds, path):
@@ -17,24 +18,37 @@ class Processor:
         pad = instance - currlen
         if pad > 0:
             self.pad(pad)
-        self._instances[index] = path
+        self._instances[index] = {
+            'path': path, 
+            'volreg': None
+        }
         logger.debug('array after insertion')
         logger.debug(json.dumps(self._instances, indent=2))
-        todo = self.volreg_tasks(index)
+        tasks = self.check_volreg(index)
+        pub.sendMessage('volreg', tasks=tasks)
 
-    def volreg_tasks(self, index):
-        a = index
-        b = max(0, index - 1)
-        volreg = [(a, b)]
+    def check_volreg(self, index):
+        tasks = list()
+
+        current = self._instances[index]
+
+        # need to run volreg on current index relative to parent index
+        i = max(0, index - 1)
+        parent = self._instances[i]
+        if parent:
+            tasks.append((current, parent))
+
+        # check if child index has been waiting for the current index
+        i = index + 1
         try:
-            if self._instances[index + 1]:
-                volreg.append((index + 1, index))
+            child = self._instances[i]
+            if not child['volreg']:
+                tasks.append((child, current))
         except IndexError:
             pass
-        logger.debug('indexes to run volreg')
-        logger.debug(json.dumps(volreg, indent=2))
-        return volreg
-
+        
+        return tasks
+        
     def pad(self, n):
         for i in range(n):
             self._instances.append(None)

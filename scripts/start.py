@@ -4,6 +4,7 @@ import logging
 from pubsub import pub
 from rtbold.consumer import Consumer
 from rtbold.processor import Processor
+from rtbold.volreg import VolReg
 from rtbold.plotter import Plotter
 
 logger = logging.getLogger('main')
@@ -17,6 +18,9 @@ def main():
     processor = Processor()
     pub.subscribe(processor.listener, 'incoming')
     logging.getLogger('processor').setLevel(logging.DEBUG)    
+    
+    volreg = VolReg()
+    pub.subscribe(volreg.listener, 'volreg')
 
     plotter = Plotter()
     pub.subscribe(plotter.listener, 'plot')
