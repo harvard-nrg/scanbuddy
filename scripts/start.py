@@ -19,7 +19,7 @@ def main():
     pub.subscribe(processor.listener, 'incoming')
     logging.getLogger('processor').setLevel(logging.DEBUG)    
     
-    volreg = VolReg()
+    volreg = VolReg(mock=True)
     pub.subscribe(volreg.listener, 'volreg')
     logging.getLogger('volreg').setLevel(logging.DEBUG)    
 
