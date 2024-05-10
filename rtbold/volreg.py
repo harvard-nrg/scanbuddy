@@ -2,50 +2,36 @@ import os
 import glob
 import json
 import logging
+import random
 import pydicom
 import subprocess
 import numpy as np
 from pubsub import pub
 
-
 logger = logging.getLogger('registration')
 
 class VolReg:
+    def __init__(self, mock=False):
+        self._mock = mock
+
     def listener(self, tasks):
-        self.tasks = tasks
         '''
         In the following example, there are two tasks (most of the time there will be only 1)
              - dicom.2.dcm should be registered to dicom.1.dcm and the 6 moco params should be put into the 'volreg' attribute for dicom.2.dcm
              - dicom.3.dcm should be registered to dicom.2.dcm and the 6 moco params should be put into the 'volreg' attribute for dicom.3.dcm
-
-        [
-            [
-                {
-                    'path': '/path/to/dicom.2.dcm'
-                    'volreg': None
-                },
-                {
-                    'path': '/path/to/dicom.1.dcm',
-                    'volreg': None
-                }
-            ],
-            [
-                {
-                    'path': '/path/to/dicom.3.dcm',
-                    'volreg': None
-                },
-                {
-                    'path': '/path/to/dicom.2.dcm',
-                    'volreg': None
-                }
-            ]
-        ]
         '''
         logger.info('received tasks for volume registration')
         logger.info(json.dumps(tasks, indent=2))
+        self.tasks = tasks
+        if not self.tasks:
+            return 
+
+        if self._mock:
+            for task in self.tasks:
+                task[0]['volreg'] = self.mock()
+            return
 
         self.run()
-        
 
     def run(self):
         self.get_num_tasks()
@@ -142,10 +128,17 @@ class VolReg:
             os.remove(file)
 
 
-
     def find_nii(self, directory, num):
         for file in os.listdir(directory):
             if f'bold_{num}' in file and file.endswith('.gz'):
                 return os.path.join(directory, file)
 
-
+    def mock(self):
+        return [
+            random.uniform(0.0, 1.0),
+            random.uniform(0.0, 1.0),
+            random.uniform(0.0, 1.0),
+            random.uniform(0.0, 1.0),
+            random.uniform(0.0, 1.0),
+            random.uniform(0.0, 1.0)
+        ]

@@ -10,39 +10,50 @@ logger = logging.getLogger('processor')
 class Processor:
     def __init__(self):
         self._instances = list()
+        self._counter = 0
+        self._pending = 0
+        self._emit_every = 2
 
     def listener(self, ds, path):
-        instance = ds.InstanceNumber
-        index = instance - 1
+        index = ds.InstanceNumber - 1
         currlen = len(self._instances)
-        pad = instance - currlen
+        pad = (index + 1) - currlen
         if pad > 0:
             self.pad(pad)
         self._instances[index] = {
             'path': path, 
             'volreg': None
         }
-        logger.debug('array after insertion')
+        self._pending -= 1
+        logger.debug(f'after insertion ({self._pending} pending)')
         logger.debug(json.dumps(self._instances, indent=2))
+
         tasks = self.check_volreg(index)
+        logger.debug('volreg tasks')
+        logger.debug(json.dumps(tasks, indent=2))
         pub.sendMessage('volreg', tasks=tasks)
+        self._counter += len(tasks)
+        logger.debug(f'after volreg ({self._pending} pending)')
+        logger.debug(json.dumps(self._instances, indent=2))
+
+        #if self._pending == 0 and self._counter % self._emit_every == 0:
+        #    pub.sendMessage('plot', self._instances)
 
     def check_volreg(self, index):
         tasks = list()
-
         current = self._instances[index]
 
-        # need to run volreg on current index relative to parent index
+        # run volreg on current relative to parent
         i = max(0, index - 1)
         parent = self._instances[i]
         if parent:
             tasks.append((current, parent))
 
-        # check if child index has been waiting for the current index
+        # check if child index has been waiting for current
         i = index + 1
         try:
             child = self._instances[i]
-            if not child['volreg']:
+            if child and not child['volreg']:
                 tasks.append((child, current))
         except IndexError:
             pass
@@ -51,6 +62,8 @@ class Processor:
         
     def pad(self, n):
         for i in range(n):
+            self._pending += 1
             self._instances.append(None)
         logger.debug(f'array after padding')
         logger.debug(json.dumps(self._instances, indent=2))
+
