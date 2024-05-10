@@ -28,7 +28,7 @@ def main():
     pub.subscribe(dash.listener, 'plot')
     logging.getLogger('dash').setLevel(logging.DEBUG)
 
-    mpl = MatplotlibPlotter()
+    mpl = MplPlotter()
     pub.subscribe(mpl.listener, 'plot')
     logging.getLogger('mpl').setLevel(logging.DEBUG)
 
