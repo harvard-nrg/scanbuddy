@@ -49,8 +49,7 @@ class VolReg:
 
             logger.info(f'volreg array from registering volume {int(pydicom.dcmread(dcm2, force=True, stop_before_pixels=True).InstanceNumber)} to volume {int(pydicom.dcmread(dcm1, force=True, stop_before_pixels=True).InstanceNumber)}: {arr}')
 
-            #pub.sendMessage('processor', arr)
-
+            self.insert_array(arr, task_idx)
 
 
     def get_num_tasks(self):
@@ -64,6 +63,10 @@ class VolReg:
         nii2 = self.run_dcm2niix(dcm2, 2)
 
         return nii1, nii2, dcm1, dcm2
+
+    def insert_array(self, arr, task_idx):
+        self.tasks[task_idx][0]['volreg'] = arr
+
 
     def run_dcm2niix(self, dicom, num):
 
@@ -103,6 +106,8 @@ class VolReg:
         _ = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
 
         arr = np.loadtxt(mocopar)
+
+        arr = list(arr)
 
         return arr
 
