@@ -38,7 +38,7 @@ class Processor:
 
         if self._pending == 0 and self._counter > self._emit_every:
             num_instances = len(self._instances)
-            logger.debug(f'publishing message to plot topic with {num_instances} instances')
+            logger.debug(f'publishing message to topic=plot with {num_instances} instances')
             pub.sendMessage('plot', instances=self._instances)
 
     def check_volreg(self, index):

@@ -24,16 +24,14 @@ def main():
     pub.subscribe(volreg.listener, 'volreg')
     logging.getLogger('volreg').setLevel(logging.DEBUG)    
 
-    dash = DashPlotter()
-    pub.subscribe(dash.listener, 'plot')
-    logging.getLogger('dash').setLevel(logging.DEBUG)
+    ui = DashPlotter()
+    #ui = MplPlotter()
 
-    mpl = MplPlotter()
-    pub.subscribe(mpl.listener, 'plot')
-    logging.getLogger('mpl').setLevel(logging.DEBUG)
+    pub.subscribe(ui.listener, 'plot')
+    logging.getLogger('ui').setLevel(logging.DEBUG)
 
     consumer.start()
-    consumer.join()
+    ui.forever()
 
 if __name__ == '__main__':
     main()
