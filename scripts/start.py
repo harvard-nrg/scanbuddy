@@ -6,7 +6,8 @@ from pubsub import pub
 from rtbold.consumer import Consumer
 from rtbold.processor import Processor
 from rtbold.volreg import VolReg
-from rtbold.plotter import Plotter
+from rtbold.plotter.dash import DashPlotter
+from rtbold.plotter.matplotlib import MplPlotter
 
 logger = logging.getLogger('main')
 logging.basicConfig(level=logging.INFO)
@@ -23,17 +24,16 @@ def main():
     pub.subscribe(volreg.listener, 'volreg')
     logging.getLogger('volreg').setLevel(logging.DEBUG)    
 
-    plotter = Plotter()
-    pub.subscribe(plotter.listener, 'plot')
-    logging.getLogger('plotter').setLevel(logging.DEBUG)
+    dash = DashPlotter()
+    pub.subscribe(dash.listener, 'plot')
+    logging.getLogger('dash').setLevel(logging.DEBUG)
 
-    #st.write('''Realtime fMRI Motion Plot Thinger''')
-    #time.sleep(10)
-    #st.write('''foobar''')
+    mpl = MatplotlibPlotter()
+    pub.subscribe(mpl.listener, 'plot')
+    logging.getLogger('mpl').setLevel(logging.DEBUG)
 
     consumer.start()
     consumer.join()
 
 if __name__ == '__main__':
     main()
-    

@@ -1,5 +1,3 @@
-import streamlit as st
-
-class Plotter:
+class MplPlotter:
     def listener(self, instances):
         pass
