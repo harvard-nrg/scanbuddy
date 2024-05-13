@@ -12,7 +12,7 @@ class Processor:
         self._instances = list()
         self._counter = 0
         self._pending = 0
-        self._emit_every = 2
+        self._emit_every = 1
 
     def listener(self, ds, path):
         index = ds.InstanceNumber - 1
@@ -36,7 +36,7 @@ class Processor:
         logger.debug(f'after volreg ({self._pending} pending)')
         logger.debug(json.dumps(self._instances, indent=2))
 
-        if self._pending == 0 and self._counter > self._emit_every:
+        if self._pending == 0 and self._counter >= self._emit_every:
             num_instances = len(self._instances)
             logger.debug(f'publishing message to topic=plot with {num_instances} instances')
             pub.sendMessage('plot', instances=self._instances)
