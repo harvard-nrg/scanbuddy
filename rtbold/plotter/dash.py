@@ -36,6 +36,7 @@ class DashPlotter:
         df = DashPlotter.df()
         line = px.line(df, x='N', y=['superior', 'left', 'posterior'])
         line.update_layout(
+            title='Displacements',
             yaxis_title='mm',
             legend={
                 'title': ''
@@ -51,6 +52,7 @@ class DashPlotter:
         df = DashPlotter.df()
         line = px.line(df, x='N', y=['roll', 'pitch', 'yaw'])
         line.update_layout(
+            title='Rotations',
             yaxis_title='degrees (ccw)',
             legend={
                 'title': ''
