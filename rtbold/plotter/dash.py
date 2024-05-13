@@ -17,9 +17,10 @@ class DashPlotter:
 
     def setup(self):
         self._app.layout = html.Div([
-            html.H1(children=self._title, style={'textAlign':'center'}),
+            html.H2(children=self._title, style={'textAlign':'center'}),
             html.Div(id='live-update-text'),
-            dcc.Graph(id='live-update-graph'),
+            dcc.Graph(id='live-update-translations'),
+            dcc.Graph(id='live-update-rotations'),
             dcc.Interval(
                 id='interval-component',
                 interval=2*1000, # in milliseconds
@@ -28,12 +29,34 @@ class DashPlotter:
         ])
 
     @callback(
-        Output('live-update-graph', 'figure'),
+        Output('live-update-translations', 'figure'),
         Input('interval-component', 'n_intervals')
     )
     def update_graph(n):
         df = DashPlotter.df()
-        return px.line(df, x='timepoint', y=['roll', 'pitch', 'yaw'])
+        line = px.line(df, x='N', y=['superior', 'left', 'posterior'])
+        line.update_layout(
+            yaxis_title='mm',
+            legend={
+                'title': ''
+            }
+        )
+        return line 
+
+    @callback(
+        Output('live-update-rotations', 'figure'),
+        Input('interval-component', 'n_intervals')
+    )
+    def update_graph(n):
+        df = DashPlotter.df()
+        line = px.line(df, x='N', y=['roll', 'pitch', 'yaw'])
+        line.update_layout(
+            yaxis_title='degrees (ccw)',
+            legend={
+                'title': ''
+            }
+        )
+        return line 
 
     def df():
         arr = list()
@@ -41,7 +64,7 @@ class DashPlotter:
             volreg = instance['volreg']
             if volreg:
                 arr.append([i] + volreg)
-        df = pd.DataFrame(arr, columns=['timepoint', 'roll', 'pitch', 'yaw', 'dS', 'dL', 'dP'])
+        df = pd.DataFrame(arr, columns=['N', 'roll', 'pitch', 'yaw', 'superior', 'left', 'posterior'])
         return df
 
     def forever(self):
