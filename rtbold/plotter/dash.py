@@ -33,7 +33,7 @@ class DashPlotter:
     )
     def update_graph(n):
         df = DashPlotter.df()
-        return px.line(df, x='timepoint', y='roll')
+        return px.line(df, x='timepoint', y=['roll', 'pitch', 'yaw'])
 
     def df():
         arr = list()
