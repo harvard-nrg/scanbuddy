@@ -23,8 +23,7 @@ class DashPlotter:
             dcc.Graph(id='live-update-rotations'),
             dcc.Interval(
                 id='interval-component',
-                interval=1*1000,
-                n_intervals=0
+                interval=1*1000
             )
         ])
 
@@ -44,12 +43,10 @@ class DashPlotter:
     def displacements(self, df):
         fig = px.line(df, x='N', y=['superior', 'left', 'posterior'])
         fig.update_layout(
+            title='Displacements',
             yaxis_title='mm',
             legend={
                 'title': ''
-            },
-            title={
-                'text': 'Displacements'
             }
         )
         return fig
@@ -57,12 +54,10 @@ class DashPlotter:
     def rotations(self, df):
         fig = px.line(df, x='N', y=['roll', 'pitch', 'yaw'])
         fig.update_layout(
+            title='Rotations',
             yaxis_title='degrees (ccw)',
             legend={
                 'title': ''
-            },
-            title={
-                'text': 'Rotations'
             }
         )
         return fig
@@ -70,9 +65,10 @@ class DashPlotter:
     def todataframe(self):
         arr = list()
         for i,instance in enumerate(self._instances, start=1):
+            if not instance:
+                continue
             volreg = instance['volreg']
-            if volreg:
-                arr.append([i] + volreg)
+            arr.append([i] + volreg)
         df = pd.DataFrame(arr, columns=['N', 'roll', 'pitch', 'yaw', 'superior', 'left', 'posterior'])
         return df
 
