@@ -119,12 +119,14 @@ class VolReg:
             return False
 
     def clean_dir(self, nii_1, nii_2, outdir):
-        os.remove(nii_1)
-        os.remove(nii_2)
+        #os.remove(nii_1)
+        #os.remove(nii_2)
         os.remove(f'{outdir}/maxdisp_delt')
         os.remove(f'{outdir}/maxdisp')
         os.remove(f'{outdir}/moco.par')
         for file in glob.glob(f'{outdir}/*.json'):
+            os.remove(file)
+        for file in glob.glob(f'{outdir}/*.nii.gz'):
             os.remove(file)
 
 
