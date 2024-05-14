@@ -40,26 +40,37 @@ class DicomHandler(FileSystemEventHandler):
             logger.info(f'An unexpected error occurred: {e}')
 
     def check_series(self, ds, old_path):
-        if ds.InstanceNumber == 1:
-            self.first_dcm_series = ds.SeriesDescription
-        if ds.InstanceNumber > 1:
-            if ds.SeriesDescription == self.first_dcm_series:
-                logger.info(f'still on the {ds.SeriesDescription} scan')
-            else:
-                self.trigger_reset(ds, old_path)
+        if getattr(self, 'first_dcm_series', None) is None:
+            logger.info(f'found first series instance uid {ds.SeriesInstanceUID}')
+            self.first_dcm_series = ds.SeriesInstanceUID
+            return
+
+        if self.first_dcm_series != ds.SeriesInstanceUID:
+            logger.info(f'found new series instance uid: {ds.SeriesInstanceUID}')
+            self.trigger_reset(ds, old_path)
+            self.first_dcm_series = ds.SeriesInstanceUID
+
 
     def trigger_reset(self, ds, old_path):
-        study_name = ds.StudyDescription
-        series_name = ds.SeriesDescription
+        logger.info('arriving at trigger_reset function')
+        old_path = Path(old_path)
+        study_name = ds.StudyInstanceUID
+        series_name = self.first_dcm_series
         dicom_parent = old_path.parent
         new_path_no_dicom = Path.joinpath(dicom_parent, study_name, series_name)
 
+        logger.info(f'path to remove: {new_path_no_dicom}')
+
         shutil.rmtree(new_path_no_dicom)
+
+        logger.info('making it here')
+
+        pub.sendMessage('reset')
         
 
     def construct_path(self, old_path, ds):
-        study_name = ds.StudyDescription
-        series_name = ds.SeriesDescription
+        study_name = ds.StudyInstanceUID
+        series_name = ds.SeriesInstanceUID
         dicom_filename = old_path.name
         dicom_parent = old_path.parent
 

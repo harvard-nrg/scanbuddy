@@ -11,9 +11,12 @@ logger = logging.getLogger('processor')
 class Processor:
     def __init__(self):
         self.reset()
+        pub.subscribe(self.reset, 'reset')
+        pub.subscribe(self.listener, 'incoming')
 
     def reset(self):
         self._instances = SortedDict()
+        logger.debug('received message to reset')
 
     def listener(self, ds, path):
         key = int(ds.InstanceNumber)
