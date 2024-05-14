@@ -29,4 +29,7 @@ class DicomHandler(FileSystemEventHandler):
             pub.sendMessage('incoming', ds=ds, path=path)
         except InvalidDicomError as e:
             logger.info(f'not a dicom file {path}')
-
+        except FileNotFoundError as e:
+            pass
+        except Exception as e:
+            logger.info(f'An unexpected error occurred: {e}')
