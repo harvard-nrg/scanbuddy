@@ -68,7 +68,8 @@ class DashPlotter:
             if not instance:
                 continue
             volreg = instance['volreg']
-            arr.append([i] + volreg)
+            if volreg:
+                arr.append([i] + volreg)
         df = pd.DataFrame(arr, columns=['N', 'roll', 'pitch', 'yaw', 'superior', 'left', 'posterior'])
         return df
 
