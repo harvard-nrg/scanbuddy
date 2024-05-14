@@ -15,7 +15,8 @@ logging.basicConfig(level=logging.INFO)
 def main():
     consumer = Consumer('/tmp/rtbold')
     logger.info('starting consumer')
-    
+    logging.getLogger('werkzeug').setLevel(logging.ERROR)
+
     processor = Processor()
     pub.subscribe(processor.listener, 'incoming')
     logging.getLogger('processor').setLevel(logging.DEBUG)    
@@ -25,11 +26,9 @@ def main():
     logging.getLogger('volreg').setLevel(logging.DEBUG)    
 
     ui = DashPlotter()
-    #ui = MplPlotter()
-
     pub.subscribe(ui.listener, 'plot')
     logging.getLogger('ui').setLevel(logging.DEBUG)
-
+    
     consumer.start()
     ui.forever()
 

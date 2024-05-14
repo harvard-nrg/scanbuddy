@@ -4,68 +4,58 @@ import json
 import logging
 import numpy as np
 from pubsub import pub
+from sortedcontainers import SortedDict
 
 logger = logging.getLogger('processor')
 
 class Processor:
     def __init__(self):
-        self._instances = list()
+        self._instances = SortedDict()
         self._counter = 0
-        self._pending = 0
         self._emit_every = 1
 
     def listener(self, ds, path):
-        index = ds.InstanceNumber - 1
-        currlen = len(self._instances)
-        pad = (index + 1) - currlen
-        if pad > 0:
-            self.pad(pad)
-        self._instances[index] = {
-            'path': path, 
+        key = int(ds.InstanceNumber)
+        self._instances[key] = {
+            'path': path,
             'volreg': None
         }
-        self._pending -= 1
-        logger.debug(f'after insertion ({self._pending} pending)')
-        logger.debug(json.dumps(self._instances, indent=2))
-
-        tasks = self.check_volreg(index)
+        logger.info('current state of instances')
+        logger.debug(json.dumps(self._instances, default=list, indent=2))
+        tasks = self.check_volreg(key)
         logger.debug('volreg tasks')
         logger.debug(json.dumps(tasks, indent=2))
         pub.sendMessage('volreg', tasks=tasks)
         self._counter += len(tasks)
-        logger.debug(f'after volreg ({self._pending} pending)')
+        logger.debug(f'after volreg')
         logger.debug(json.dumps(self._instances, indent=2))
+        
+        pub.sendMessage('plot', instances=self._instances)
 
-        if self._pending == 0 and self._counter >= self._emit_every:
-            num_instances = len(self._instances)
-            logger.debug(f'publishing message to topic=plot with {num_instances} instances')
-            pub.sendMessage('plot', instances=self._instances)
-
-    def check_volreg(self, index):
+    def check_volreg(self, key):
         tasks = list()
-        current = self._instances[index]
+        current = self._instances[key]
 
-        # run volreg on current relative to parent
-        i = max(0, index - 1)
-        parent = self._instances[i]
-        if parent:
-            tasks.append((current, parent))
+        # get numerical index of key O(log n)
+        i = self._instances.bisect_left(key)
 
-        # check if child index has been waiting for current
-        i = index + 1
+        # always register current node to left node
         try:
-            child = self._instances[i]
-            if child and not child['volreg']:
-                tasks.append((child, current))
+            left_index = max(0, i - 1)
+            left = self._instances.values()[left_index]
+            logger.debug(f'to the left of {current} is {left}')
+            tasks.append((current, left))
         except IndexError:
             pass
-        
+
+        # if there is a right node, re-register to current node
+        try:
+            right_index = i + 1
+            right = self._instances.values()[right_index]
+            logger.debug(f'to the right of {current} is {right}')
+            tasks.append((right, current))
+        except IndexError:
+            pass
+
         return tasks
-        
-    def pad(self, n):
-        for i in range(n):
-            self._pending += 1
-            self._instances.append(None)
-        logger.debug(f'array after padding')
-        logger.debug(json.dumps(self._instances, indent=2))
 

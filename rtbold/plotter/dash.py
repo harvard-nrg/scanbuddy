@@ -11,7 +11,7 @@ class DashPlotter:
     def __init__(self):
         self._app = Dash('Realtime fMRI is fun')
         self._title = 'Realtime fMRI Motion'
-        self._instances = list()
+        self._instances = dict()
         self.init_page()
         self.init_callbacks()
 
@@ -64,9 +64,7 @@ class DashPlotter:
 
     def todataframe(self):
         arr = list()
-        for i,instance in enumerate(self._instances, start=1):
-            if not instance:
-                continue
+        for i,instance in enumerate(self._instances.values(), start=1):
             volreg = instance['volreg']
             if volreg:
                 arr.append([i] + volreg)
@@ -74,7 +72,7 @@ class DashPlotter:
         return df
 
     def forever(self):
-        self._app.run(debug=True)
+        self._app.run()
 
     def listener(self, instances):
         self._instances = instances
