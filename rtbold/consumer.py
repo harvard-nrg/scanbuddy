@@ -28,6 +28,7 @@ class DicomHandler(FileSystemEventHandler):
         path = event.src_path
         try:
             ds = pydicom.dcmread(path, stop_before_pixels=True)
+            self.check_series(ds, path)
             path = self.construct_path(Path(path), ds)
             logger.info(f'publishing message to topic=incoming with ds={path}')
             pub.sendMessage('incoming', ds=ds, path=path)
@@ -37,6 +38,24 @@ class DicomHandler(FileSystemEventHandler):
             pass
         except Exception as e:
             logger.info(f'An unexpected error occurred: {e}')
+
+    def check_series(self, ds, old_path):
+        if ds.InstanceNumber == 1:
+            self.first_dcm_series = ds.SeriesDescription
+        if ds.InstanceNumber > 1:
+            if ds.SeriesDescription == self.first_dcm_series:
+                logger.info(f'still on the {ds.SeriesDescription} scan')
+            else:
+                self.trigger_reset(ds, old_path)
+
+    def trigger_reset(self, ds, old_path):
+        study_name = ds.StudyDescription
+        series_name = ds.SeriesDescription
+        dicom_parent = old_path.parent
+        new_path_no_dicom = Path.joinpath(dicom_parent, study_name, series_name)
+
+        shutil.rmtree(new_path_no_dicom)
+        
 
     def construct_path(self, old_path, ds):
         study_name = ds.StudyDescription
