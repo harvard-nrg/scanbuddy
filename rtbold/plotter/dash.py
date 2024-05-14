@@ -4,6 +4,7 @@ from dash import Dash, html, dcc, callback, Output, Input
 import plotly.express as px
 import pandas as pd
 import random
+from pubsub import pub
 
 logger = logging.getLogger('ui')
 
@@ -14,6 +15,7 @@ class DashPlotter:
         self._instances = dict()
         self.init_page()
         self.init_callbacks()
+        pub.subscribe(self.listener, 'plot')
 
     def init_page(self):
         self._app.layout = html.Div([

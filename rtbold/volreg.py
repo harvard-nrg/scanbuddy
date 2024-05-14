@@ -13,6 +13,7 @@ logger = logging.getLogger('registration')
 class VolReg:
     def __init__(self, mock=False):
         self._mock = mock
+        pub.subscribe(self.listener, 'volreg')
 
     def listener(self, tasks):
         '''
