@@ -1,13 +1,14 @@
 import os
-from pathlib import Path
+import glob
 import shutil
 import logging
 import pydicom
-from pydicom.errors import InvalidDicomError
-
 from pubsub import pub
-from watchdog.events import PatternMatchingEventHandler
+from pathlib import Path
+from pydicom.errors import InvalidDicomError
 from watchdog.observers.polling import PollingObserver
+from watchdog.events import PatternMatchingEventHandler
+
 
 logger = logging.getLogger('consumer')
 
@@ -48,21 +49,31 @@ class DicomHandler(PatternMatchingEventHandler):
         if not hasattr(self, 'first_dcm_series'):
             logger.info(f'found first series instance uid {ds.SeriesInstanceUID}')
             self.first_dcm_series = ds.SeriesInstanceUID
+            self.first_dcm_study = ds.StudyInstanceUID
             return
 
         if self.first_dcm_series != ds.SeriesInstanceUID:
             logger.info(f'found new series instance uid: {ds.SeriesInstanceUID}')
             self.trigger_reset(ds, old_path)
             self.first_dcm_series = ds.SeriesInstanceUID
+            self.first_dcm_study = ds.StudyInstanceUID
 
     def trigger_reset(self, ds, old_path):
-        study_name = ds.StudyInstanceUID
+        study_name = self.first_dcm_study
         series_name = self.first_dcm_series
         dicom_parent = old_path.parent
-        new_path_no_dicom = Path.joinpath(dicom_parent, study_name, series_name)
-        logger.info(f'path to remove: {new_path_no_dicom}')
+        new_path_no_dicom = Path.joinpath(dicom_parent, study_name)#, series_name)
+        logger.debug(f'path to remove: {new_path_no_dicom}')
         shutil.rmtree(new_path_no_dicom)
+        self.clean_parent(dicom_parent)
+        logger.debug('making it out of clean_parent method')
         pub.sendMessage('reset')
+
+    def clean_parent(self, path):
+        logger.debug(f'cleaning target dir: {path}')
+        for file in glob.glob(f'{path}/*.dcm'):
+            logger.debug(f'removing {file}')
+            os.remove(file)
 
     def construct_path(self, old_path, ds):
         study_name = ds.StudyInstanceUID
