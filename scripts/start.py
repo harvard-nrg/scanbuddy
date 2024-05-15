@@ -21,22 +21,23 @@ def main():
     parser.add_argument('--folder', type=Path, default='/tmp/rtbold')
     args = parser.parse_args()
 
+    args.folder = Path.joinpath(args.folder, 'pucky')
+
     consumer = Consumer(args.folder)
     processor = Processor()
     volreg = VolReg(mock=args.mock)
     ui = DashPlotter()
 
     if args.verbose:
-        logging.getLogger('processor').setLevel(logging.DEBUG)    
-        logging.getLogger('volreg').setLevel(logging.DEBUG)    
+        logging.getLogger('processor').setLevel(logging.DEBUG)
+        logging.getLogger('volreg').setLevel(logging.DEBUG)
         logging.getLogger('ui').setLevel(logging.DEBUG)
    
     # logging from this module is useful, but noisy
-    logging.getLogger('werkzeug').setLevel(logging.ERROR)    
+    logging.getLogger('werkzeug').setLevel(logging.ERROR)
     
     consumer.start()
     ui.forever()
 
 if __name__ == '__main__':
     main()
-
