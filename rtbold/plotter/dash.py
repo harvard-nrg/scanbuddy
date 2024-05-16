@@ -19,7 +19,8 @@ class DashPlotter:
 
     def init_page(self):
         self._app.layout = html.Div([
-            html.H2(id='graph-title', children=self._title, style={'textAlign':'center'}),
+            html.H2(children=self._title, style={'textAlign':'center'}),
+            html.Div(id='live-update-text'),
             dcc.Graph(id='live-update-displacements'),
             dcc.Graph(id='live-update-rotations'),
             dcc.Interval(
@@ -32,7 +33,6 @@ class DashPlotter:
         self._app.callback(
             Output('live-update-displacements', 'figure'),
             Output('live-update-rotations', 'figure'),
-            Output('graph-title', 'children'),
             Input('interval-component', 'n_intervals'),
         )(self.update_graphs)
 
@@ -40,17 +40,15 @@ class DashPlotter:
         df = self.todataframe()
         disps = self.displacements(df)
         rots = self.rotations(df)
-        title = self.get_title()
-        return disps,rots,title
-
-    def get_title(self):
-        title = self._title
-        return title
+        return disps,rots
 
     def displacements(self, df):
         fig = px.line(df, x='N', y=['superior', 'left', 'posterior'])
         fig.update_layout(
-            title='Displacements',
+            title={
+                'text': 'Displacements',
+                'x': 0.5
+            },
             yaxis_title='mm',
             legend={
                 'title': ''
@@ -81,6 +79,5 @@ class DashPlotter:
     def forever(self):
         self._app.run()
 
-    def listener(self, instances, title_string):
+    def listener(self, instances):
         self._instances = instances
-        self._title = title_string
