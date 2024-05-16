@@ -59,7 +59,10 @@ class DashPlotter:
     def rotations(self, df):
         fig = px.line(df, x='N', y=['roll', 'pitch', 'yaw'])
         fig.update_layout(
-            title='Rotations',
+            title={
+                'text': 'Rotations',
+                'x': 0.5
+            },
             yaxis_title='degrees (ccw)',
             legend={
                 'title': ''
