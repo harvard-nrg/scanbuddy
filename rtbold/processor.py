@@ -33,8 +33,9 @@ class Processor:
         pub.sendMessage('volreg', tasks=tasks)
 
         logger.debug(f'after volreg')
-        logger.debug(json.dumps(self._instances, indent=2))        
-        pub.sendMessage('plot', instances=self._instances)
+        logger.debug(json.dumps(self._instances, indent=2))
+        title_string = " ".join([ds.StudyDescription, ds.SeriesDescription, str(ds.SeriesNumber)])
+        pub.sendMessage('plot', instances=self._instances, title_string=title_string)
 
     def check_volreg(self, key):
         tasks = list()
