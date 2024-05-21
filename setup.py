@@ -4,14 +4,14 @@ from setuptools import setup, find_packages
 here = os.path.abspath(os.path.dirname(__file__))
 
 requires = [
-    'pyaml',
-    'pygame',
-    'plotext',
-    'textual',
-    'textual-dev',
-    'pynetdicom',
-    'nibabel',
-    'matplotlib'
+    'dash',
+    'pydicom',
+    'pubsub',
+    'watchdog',
+    'numpy',
+    'sortedcontainers',
+    'plotly',
+    'pandas'
 ]
 
 about = dict()
