@@ -50,10 +50,10 @@ class DashPlotter:
         return title
 
     def displacements(self, df):
-        fig = px.line(df, x='N', y=['superior', 'left', 'posterior'])
+        fig = px.line(df, x='N', y=['X', 'Y', 'Z'])
         fig.update_layout(
             title={
-                'text': 'Displacements',
+                'text': 'Translations',
                 'x': 0.5
             },
             yaxis_title='mm',
