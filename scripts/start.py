@@ -5,6 +5,7 @@ import logging
 from pubsub import pub
 from pathlib import Path
 from argparse import ArgumentParser
+from rtbold.directory_watcher import Directory_Watcher
 from rtbold.consumer import Consumer
 from rtbold.processor import Processor
 from rtbold.volreg import VolReg
@@ -23,6 +24,7 @@ def main():
 
     args.folder = Path.joinpath(args.folder, 'pucky')
 
+    directory_watcher = 
     consumer = Consumer(args.folder)
     processor = Processor()
     volreg = VolReg(mock=args.mock)
@@ -35,7 +37,9 @@ def main():
    
     # logging from this module is useful, but noisy
     logging.getLogger('werkzeug').setLevel(logging.ERROR)
-    
+
+
+    #directory_watcher.start()
     consumer.start()
     ui.forever()
 
