@@ -41,9 +41,9 @@ RUN cmake .. && \
     cp bin/dcm2niix "${D2N_PREFIX}" && \
     rm -r "/tmp/dcm2niix-${D2N_VERSION}"
 
-# install scanbuddy
+# install rtbold
 ARG BUDDY_PREFIX="/sw/apps/rtbold"
-ARG BUDDY_VERSION="v0.0.1"
+ARG BUDDY_VERSION="v0.0.2"
 RUN python3 -m venv "${BUDDY_PREFIX}" && \
     dnf install -y gcc zlib-devel libjpeg-devel python39-tkinter && \
     "${BUDDY_PREFIX}/bin/pip" install "git+https://github.com/harvard-nrg/rt_bold.git@${BUDDY_VERSION}"
