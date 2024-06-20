@@ -22,12 +22,18 @@ class Consumer:
         )
 
     def start(self):
-        logger.info('starting watchdog observer')
+        logger.info(f'starting dicom watchdog observer on {self._directory}')
         self._directory.mkdir(parents=True, exist_ok=True)
         self._observer.start()
 
     def join(self):
         self._observer.join()
+
+    def stop(self):
+        logger.info(f'stopping consumer process on {self._directory}')
+        self._observer.stop()
+        logger.debug(f'removing {self._directory}')
+        shutil.rmtree(self._directory)
 
 class DicomHandler(PatternMatchingEventHandler):
     def on_created(self, event):

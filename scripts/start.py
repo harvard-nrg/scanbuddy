@@ -5,7 +5,7 @@ import logging
 from pubsub import pub
 from pathlib import Path
 from argparse import ArgumentParser
-from rtbold.directory_watcher import Directory_Watcher
+from rtbold.directory_watcher import DirectoryWatcher
 from rtbold.consumer import Consumer
 from rtbold.processor import Processor
 from rtbold.volreg import VolReg
@@ -24,7 +24,7 @@ def main():
 
     #args.folder = Path.joinpath(args.folder, 'pucky')
 
-    directory_watcher = Directory_Watcher(args.folder)
+    directory_watcher = DirectoryWatcher(args.folder)
     processor = Processor()
     volreg = VolReg(mock=args.mock)
     ui = DashPlotter()
@@ -38,10 +38,10 @@ def main():
     logging.getLogger('werkzeug').setLevel(logging.ERROR)
 
     # Start the directory watcher and wait for it to return a value
-    directory_path = directory_watcher.start()
+    directory_watcher.start()
 
-    consumer = Consumer(directory_path)
-    consumer.start()
+    #consumer = Consumer(directory_path)
+    #consumer.start()
     ui.forever()
 
 if __name__ == '__main__':

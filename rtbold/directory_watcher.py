@@ -9,31 +9,39 @@ from pathlib import Path
 from pydicom.errors import InvalidDicomError
 from watchdog.observers.polling import PollingObserver
 from watchdog.events import PatternMatchingEventHandler
+from rtbold.consumer import Consumer
 
 logger = logging.getLogger('directory_watcher')
 
 
-class Directory_Watcher:
+class DirectoryWatcher:
     def __init__(self, directory):
         self._directory = directory
         self._observer = PollingObserver(timeout=1)
-
-
-    def on_created(self, event):
-        if event.is_directory:
-            logger.info(f"New directory {event.src_path} has been created.")
-            return event.src_path
+        self._observer.schedule(
+            DirectoryHandler(ignore_directories=False),
+            directory
+        )
 
     def start(self):
-        event_handler = PatternMatchingEventHandler(patterns=["*/"], ignore_directories=False, ignore_patterns=None, case_sensitive=True)
-        event_handler.on_created = self.on_created
-
-        self._observer.schedule(event_handler, self._directory, recursive=True)
+        logger.info(f'starting watchdog directory observer on {self._directory}')
         self._observer.start()
+      
 
-        try:
-            while True:
-                time.sleep(1)
-        except KeyboardInterrupt:
-            self._observer.stop()
-            self._observer.join()
+    def join(self):
+        self._observer.join()
+
+class DirectoryHandler(PatternMatchingEventHandler):
+	def __init__(self, *args, **kwargs):
+		self._consumer = None
+		super().__init__(*args, **kwargs)
+
+	def on_created(self, event):
+		if event.is_directory:
+			logger.debug(f'on_created called on {event.src_path}')
+			if self._consumer:
+				self._consumer.stop()
+			self._consumer = Consumer(Path(event.src_path))
+			self._consumer.start()
+
+
