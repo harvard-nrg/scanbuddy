@@ -5,8 +5,7 @@ import logging
 from pubsub import pub
 from pathlib import Path
 from argparse import ArgumentParser
-from rtbold.directory_watcher import DirectoryWatcher
-from rtbold.consumer import Consumer
+from rtbold.watcher.directory import DirectoryWatcher
 from rtbold.processor import Processor
 from rtbold.volreg import VolReg
 from rtbold.plotter.dash import DashPlotter
@@ -22,9 +21,7 @@ def main():
     parser.add_argument('--folder', type=Path, default='/tmp/rtbold')
     args = parser.parse_args()
 
-    #args.folder = Path.joinpath(args.folder, 'pucky')
-
-    directory_watcher = DirectoryWatcher(args.folder)
+    watcher = DirectoryWatcher(args.folder)
     processor = Processor()
     volreg = VolReg(mock=args.mock)
     ui = DashPlotter()
@@ -37,11 +34,8 @@ def main():
     # logging from this module is useful, but noisy
     logging.getLogger('werkzeug').setLevel(logging.ERROR)
 
-    # Start the directory watcher and wait for it to return a value
-    directory_watcher.start()
-
-    #consumer = Consumer(directory_path)
-    #consumer.start()
+    # start the watcher and ui
+    watcher.start()
     ui.forever()
 
 if __name__ == '__main__':

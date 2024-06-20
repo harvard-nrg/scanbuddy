@@ -9,10 +9,9 @@ from pydicom.errors import InvalidDicomError
 from watchdog.observers.polling import PollingObserver
 from watchdog.events import PatternMatchingEventHandler
 
+logger = logging.getLogger()
 
-logger = logging.getLogger('consumer')
-
-class Consumer:
+class DicomWatcher:
     def __init__(self, directory):
         self._directory = directory
         self._observer = PollingObserver(timeout=1)
@@ -22,7 +21,7 @@ class Consumer:
         )
 
     def start(self):
-        logger.info(f'starting dicom watchdog observer on {self._directory}')
+        logger.info(f'starting dicom watcher on {self._directory}')
         self._directory.mkdir(parents=True, exist_ok=True)
         self._observer.start()
 
@@ -30,7 +29,7 @@ class Consumer:
         self._observer.join()
 
     def stop(self):
-        logger.info(f'stopping consumer process on {self._directory}')
+        logger.info(f'stopping dicom watcher on {self._directory}')
         self._observer.stop()
         logger.debug(f'removing {self._directory}')
         shutil.rmtree(self._directory)
