@@ -1,47 +1,39 @@
-import os
-import glob
-import shutil
-import logging
-import pydicom
 import time
-from pubsub import pub
+import logging
 from pathlib import Path
-from pydicom.errors import InvalidDicomError
 from watchdog.observers.polling import PollingObserver
-from watchdog.events import PatternMatchingEventHandler
-from rtbold.consumer import Consumer
+from watchdog.events import FileSystemEventHandler
+from rtbold.watcher.dicom import DicomWatcher
 
-logger = logging.getLogger('directory_watcher')
-
+logger = logging.getLogger()
 
 class DirectoryWatcher:
     def __init__(self, directory):
         self._directory = directory
         self._observer = PollingObserver(timeout=1)
         self._observer.schedule(
-            DirectoryHandler(ignore_directories=False),
+            DirectoryHandler(),
             directory
         )
 
     def start(self):
         logger.info(f'starting watchdog directory observer on {self._directory}')
         self._observer.start()
-      
 
     def join(self):
         self._observer.join()
 
-class DirectoryHandler(PatternMatchingEventHandler):
+class DirectoryHandler(FileSystemEventHandler):
 	def __init__(self, *args, **kwargs):
-		self._consumer = None
+		self._dicomwatcher = None
 		super().__init__(*args, **kwargs)
 
 	def on_created(self, event):
 		if event.is_directory:
-			logger.debug(f'on_created called on {event.src_path}')
-			if self._consumer:
-				self._consumer.stop()
-			self._consumer = Consumer(Path(event.src_path))
-			self._consumer.start()
+			logger.debug(f'on_created fired on {event.src_path}')
+			if self._watcher:
+				self._dicomwatcher.stop()
+			self._dicomwatcher = DicomWatcher(Path(event.src_path))
+			self._dicomwatcher.start()
 
 
