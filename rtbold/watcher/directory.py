@@ -17,7 +17,7 @@ class DirectoryWatcher:
         )
 
     def start(self):
-        logger.info(f'starting watchdog directory observer on {self._directory}')
+        logger.info(f'starting directory watcher on {self._directory}')
         self._observer.start()
 
     def join(self):
