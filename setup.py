@@ -6,7 +6,7 @@ here = os.path.abspath(os.path.dirname(__file__))
 requires = [
     'dash',
     'pydicom',
-    'pubsub',
+    'PyPubSub',
     'watchdog',
     'numpy',
     'sortedcontainers',

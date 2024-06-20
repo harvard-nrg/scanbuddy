@@ -60,4 +60,4 @@ ENV TERM="xterm-256color"
 # expose port
 EXPOSE 11112
 
-ENTRYPOINT ["/sw/apps/scanbuddy/bin/start.py"]
+ENTRYPOINT ["/sw/apps/rtbold/bin/start.py"]
