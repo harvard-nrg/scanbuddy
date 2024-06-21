@@ -42,11 +42,11 @@ RUN cmake .. && \
     rm -r "/tmp/dcm2niix-${D2N_VERSION}"
 
 # install rtbold
-ARG BUDDY_PREFIX="/sw/apps/rtbold"
-ARG BUDDY_VERSION="v0.0.2"
-RUN python3 -m venv "${BUDDY_PREFIX}" && \
+ARG RTBOLD_PREFIX="/sw/apps/rtbold"
+ARG RTBOLD_VERSION="v0.0.2"
+RUN python3 -m venv "${RTBOLD_PREFIX}" && \
     dnf install -y gcc zlib-devel libjpeg-devel python39-tkinter && \
-    "${BUDDY_PREFIX}/bin/pip" install "git+https://github.com/harvard-nrg/rt_bold.git@${BUDDY_VERSION}"
+    "${RTBOLD_PREFIX}/bin/pip" install "git+https://github.com/harvard-nrg/rt_bold.git@${RTBOLD_VERSION}"
 
 # set up afni environment
 ENV PATH="${AFNI_PREFIX}:${PATH}"
@@ -54,7 +54,7 @@ ENV PATH="${AFNI_PREFIX}:${PATH}"
 # set up dcm2niix environment
 ENV PATH="${D2N_PREFIX}:${PATH}"
 
-# set up scanbuddy
+# set up rtbold
 ENV TERM="xterm-256color"
 
 # expose port
