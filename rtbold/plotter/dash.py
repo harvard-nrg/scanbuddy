@@ -9,8 +9,10 @@ from pubsub import pub
 logger = logging.getLogger('ui')
 
 class DashPlotter:
-    def __init__(self):
+    def __init__(self, host='127.0.0.1', port=8080):
         self._app = Dash('Realtime fMRI is fun')
+        self._host = host
+        self._port = port
         self._title = 'Realtime fMRI Motion'
         self._subtitle = ''
         self._instances = dict()
@@ -87,7 +89,10 @@ class DashPlotter:
         return df
 
     def forever(self):
-        self._app.run()
+        self._app.run(
+            host=self._host,
+            port=self._port
+        )
 
     def listener(self, instances, subtitle_string):
         self._instances = instances

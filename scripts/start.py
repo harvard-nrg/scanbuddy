@@ -17,6 +17,8 @@ logging.basicConfig(level=logging.INFO)
 def main():
     parser = ArgumentParser()
     parser.add_argument('-m', '--mock', action='store_true')
+    parser.add_argument('--host', type=str, default='127.0.0.1')
+    parser.add_argument('--port', type=int, default=8080)
     parser.add_argument('-v', '--verbose', action='store_true')
     parser.add_argument('--folder', type=Path, default='/tmp/rtbold')
     args = parser.parse_args()
@@ -24,7 +26,7 @@ def main():
     watcher = DirectoryWatcher(args.folder)
     processor = Processor()
     volreg = VolReg(mock=args.mock)
-    ui = DashPlotter()
+    ui = DashPlotter(host=args.host, port=args.port)
 
     if args.verbose:
         logging.getLogger('processor').setLevel(logging.DEBUG)
