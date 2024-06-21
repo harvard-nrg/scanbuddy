@@ -31,7 +31,7 @@ class DirectoryHandler(FileSystemEventHandler):
 	def on_created(self, event):
 		if event.is_directory:
 			logger.debug(f'on_created fired on {event.src_path}')
-			if self._watcher:
+			if self._dicomwatcher:
 				self._dicomwatcher.stop()
 			self._dicomwatcher = DicomWatcher(Path(event.src_path))
 			self._dicomwatcher.start()
