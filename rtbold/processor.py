@@ -48,7 +48,7 @@ class Processor:
         try:
             left_index = max(0, i - 1)
             left = self._instances.values()[left_index]
-            logger.debug(f'to the left of {current['path']} is {left['path']}')
+            logger.debug(f'to the left of {current["path"]} is {left["path"]}')
             tasks.append((current, left))
         except IndexError:
             pass
@@ -57,7 +57,7 @@ class Processor:
         try:
             right_index = i + 1
             right = self._instances.values()[right_index]
-            logger.debug(f'to the right of {current['path']} is {right['path']}')
+            logger.debug(f'to the right of {current["path"]} is {right["path"]}')
             tasks.append((right, current))
         except IndexError:
             pass
