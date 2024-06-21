@@ -114,7 +114,7 @@ class VolReg:
 
     def check_dicoms(self, task_idx):
         if self.tasks[task_idx][1]['path'] == self.tasks[task_idx][0]['path']:
-            logger.warning(f'the two input dicom files are the same. registering {os.path.basename(self.tasks[task_idx][1]['path'])} to itself will yield 0s')
+            logger.warning(f'the two input dicom files are the same. registering {os.path.basename(self.tasks[task_idx][1]["path"])} to itself will yield 0s')
             return True
         else:
             return False
