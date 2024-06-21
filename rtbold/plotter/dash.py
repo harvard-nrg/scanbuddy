@@ -52,7 +52,7 @@ class DashPlotter:
         return title
 
     def displacements(self, df):
-        fig = px.line(df, x='N', y=['X', 'Y', 'Z'])
+        fig = px.line(df, x='N', y=['x', 'y', 'z'])
         fig.update_layout(
             title={
                 'text': 'Translations',
@@ -85,7 +85,7 @@ class DashPlotter:
             volreg = instance['volreg']
             if volreg:
                 arr.append([i] + volreg)
-        df = pd.DataFrame(arr, columns=['N', 'roll', 'pitch', 'yaw', 'superior', 'left', 'posterior'])
+        df = pd.DataFrame(arr, columns=['N', 'roll', 'pitch', 'yaw', 'x', 'y', 'z'])
         return df
 
     def forever(self):
