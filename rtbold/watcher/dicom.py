@@ -14,7 +14,7 @@ logger = logging.getLogger()
 class DicomWatcher:
     def __init__(self, directory):
         self._directory = directory
-        self._observer = PollingObserver(timeout=1)
+        self._observer = PollingObserver(timeout=.5)
         self._observer.schedule(
             DicomHandler(ignore_directories=True),
             directory
