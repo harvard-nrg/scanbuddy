@@ -11,7 +11,8 @@ requires = [
     'numpy',
     'sortedcontainers',
     'plotly',
-    'pandas'
+    'pandas',
+    'retry'
 ]
 
 about = dict()
