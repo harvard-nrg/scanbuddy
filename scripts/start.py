@@ -32,6 +32,7 @@ def main():
         logging.getLogger('processor').setLevel(logging.DEBUG)
         logging.getLogger('volreg').setLevel(logging.DEBUG)
         logging.getLogger('ui').setLevel(logging.DEBUG)
+        logging.getLogger('registration').setLevel(logging.DEBUG)
    
     # logging from this module is useful, but noisy
     logging.getLogger('werkzeug').setLevel(logging.ERROR)

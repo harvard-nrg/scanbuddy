@@ -1,21 +1,23 @@
 import os
 import glob
+import time
 import shutil
 import logging
 import pydicom
 from pubsub import pub
+from retry import retry
 from pathlib import Path
 from pydicom.errors import InvalidDicomError
 from watchdog.observers.polling import PollingObserver
 from watchdog.events import PatternMatchingEventHandler
-from retry import retry
+
 
 logger = logging.getLogger()
 
 class DicomWatcher:
     def __init__(self, directory):
         self._directory = directory
-        self._observer = PollingObserver(timeout=.1)
+        self._observer = PollingObserver(timeout=.01)
         self._observer.schedule(
             DicomHandler(ignore_directories=True),
             directory
@@ -39,8 +41,8 @@ class DicomHandler(PatternMatchingEventHandler):
     def on_created(self, event):
         path = Path(event.src_path)
         try:
+            self.file_size = -1
             ds = self.read_dicom(path)
-            ds = pydicom.dcmread(path, stop_before_pixels=True)
             self.check_series(ds, path)
             path = self.construct_path(path, ds)
             logger.info(f'publishing message to topic=incoming with ds={path}')
@@ -54,10 +56,13 @@ class DicomHandler(PatternMatchingEventHandler):
             logger.exception(e, exc_info=True)
 
 
-    @retry((IOError), delay=.1, backoff=2, max_delay=1.5)
+    @retry((IOError, InvalidDicomError), delay=.01, backoff=1.5, max_delay=1.5)
     def read_dicom(self, dicom):
-        ds = pydicom.dcmread(dicom, stop_before_pixels=True)
-        return ds
+        new_file_size = dicom.stat().st_size
+        if self.file_size != new_file_size:
+            self.file_size = new_file_size
+            raise IOError
+        return pydicom.dcmread(dicom, stop_before_pixels=True)
 
     def check_series(self, ds, old_path):
         if not hasattr(self, 'first_dcm_series'):

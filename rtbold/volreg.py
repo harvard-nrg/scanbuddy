@@ -7,6 +7,7 @@ import pydicom
 import subprocess
 import numpy as np
 from pubsub import pub
+import time
 
 logger = logging.getLogger('registration')
 
@@ -41,6 +42,7 @@ class VolReg:
         for task_idx in range(self.num_tasks):
             self.check_dicoms(task_idx)
 
+            start = time.time()
 
             nii1, nii2, dcm1, dcm2 = self.create_niis(task_idx)
 
@@ -51,6 +53,10 @@ class VolReg:
             logger.info(f'volreg array from registering volume {int(pydicom.dcmread(dcm2, force=True, stop_before_pixels=True).InstanceNumber)} to volume {int(pydicom.dcmread(dcm1, force=True, stop_before_pixels=True).InstanceNumber)}: {arr}')
 
             self.insert_array(arr, task_idx)
+
+            elapsed = time.time() - start
+
+            logger.info(f'processing took {elapsed} seconds')
 
 
     def get_num_tasks(self):
@@ -76,7 +82,7 @@ class VolReg:
         dcm2niix_cmd = [
            'dcm2niix',
            '-b', 'y',
-           '-z', 'y',
+           #'-z', 'y',
            '-s', 'y',
            '-f', f'bold_{num}',
            '-o', self.out_dir,
@@ -97,9 +103,10 @@ class VolReg:
             '-base', nii_1,
             '-linear',
             '-1Dfile', mocopar,
-            '-maxdisp1D', maxdisp,
+            #'-maxdisp1D', maxdisp,
             '-x_thresh', '10',
             '-rot_thresh', '10',
+            '-nomaxdisp',
             '-prefix', 'NULL',
             nii_2
         ]
@@ -122,18 +129,19 @@ class VolReg:
     def clean_dir(self, nii_1, nii_2, outdir):
         #os.remove(nii_1)
         #os.remove(nii_2)
-        os.remove(f'{outdir}/maxdisp_delt')
-        os.remove(f'{outdir}/maxdisp')
+        #os.remove(f'{outdir}/maxdisp_delt')
+        #os.remove(f'{outdir}/maxdisp')
         os.remove(f'{outdir}/moco.par')
         for file in glob.glob(f'{outdir}/*.json'):
             os.remove(file)
-        for file in glob.glob(f'{outdir}/*.nii.gz'):
+        #for file in glob.glob(f'{outdir}/*.nii.gz'):
+        for file in glob.glob(f'{outdir}/*.nii'):
             os.remove(file)
 
 
     def find_nii(self, directory, num):
         for file in os.listdir(directory):
-            if f'bold_{num}' in file and file.endswith('.gz'):
+            if f'bold_{num}' in file and file.endswith('.nii'):#file.endswith('.gz'):
                 return os.path.join(directory, file)
 
     def mock(self):
