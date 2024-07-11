@@ -51,11 +51,12 @@ class DicomHandler(PatternMatchingEventHandler):
             pass
         except Exception as e:
             logger.info(f'An unexpected error occurred: {e}')
+            logger.exception(e, exc_info=True)
 
 
     @retry((IOError), delay=.1, backoff=2, max_delay=1.5)
     def read_dicom(self, dicom):
-        ds = pydicom.dcmread(path, stop_before_pixels=True)
+        ds = pydicom.dcmread(dicom, stop_before_pixels=True)
         return ds
 
     def check_series(self, ds, old_path):
