@@ -12,4 +12,4 @@ publish:
 	pip install 'twine>=1.5.0'
 	python3 setup.py sdist bdist_wheel --universal
 	twine upload dist/*.whl
-	rm -fr build dist .egg dwiqc.egg-info
+	rm -fr build dist .egg rtbold.egg-info

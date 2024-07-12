@@ -42,6 +42,9 @@ class DicomHandler(PatternMatchingEventHandler):
         path = Path(event.src_path)
         try:
             self.file_size = -1
+            if not path.exists():
+                logger.info(f'file {path} no longer exists')
+                return
             ds = self.read_dicom(path)
             self.check_series(ds, path)
             path = self.construct_path(path, ds)
@@ -56,7 +59,7 @@ class DicomHandler(PatternMatchingEventHandler):
             logger.exception(e, exc_info=True)
 
 
-    @retry((IOError, InvalidDicomError), delay=.01, backoff=1.5, max_delay=1.5)
+    @retry((IOError, InvalidDicomError), delay=.01, backoff=1.5, max_delay=1.5, tries=10)
     def read_dicom(self, dicom):
         new_file_size = dicom.stat().st_size
         if self.file_size != new_file_size:
