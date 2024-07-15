@@ -61,9 +61,16 @@ class DicomHandler(PatternMatchingEventHandler):
 
     @retry((IOError, InvalidDicomError), delay=.01, backoff=1.5, max_delay=1.5, tries=10)
     def read_dicom(self, dicom):
+    """
+    Checking the file size is necessary when mounted over a samba share.
+    the scanner writes dicoms as they come (even if they are incomplete)
+    This method ensures the entire dicom is written before being processed
+    """
         new_file_size = dicom.stat().st_size
         if self.file_size != new_file_size:
+            logger.info(f'file size was {self.file_size}')
             self.file_size = new_file_size
+            logger.info(f'file size is now {self.file_size}')
             raise IOError
         return pydicom.dcmread(dicom, stop_before_pixels=True)
 
