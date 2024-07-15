@@ -91,7 +91,7 @@ class VolReg:
 
         output = subprocess.check_output(dcm2niix_cmd, stderr=subprocess.STDOUT)
 
-        logger.info(f'dcm2niix output: {output}')
+        logger.debug(f'dcm2niix output: {output}')
 
         nii_file = self.find_nii(self.out_dir, num)
 
