@@ -37,8 +37,10 @@ class DicomWatcher:
         logger.info(f'removing {self._directory}')
         try:
             shutil.rmtree(self._directory)
+            pub.sendMessage('reset')
         except FileNotFoundError:
             logger.info(f'{self._directory} does not exist, moving on')
+            pub.sendMessage('reset')
             pass
 
 class DicomHandler(PatternMatchingEventHandler):
