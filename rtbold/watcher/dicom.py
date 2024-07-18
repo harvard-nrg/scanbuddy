@@ -34,8 +34,12 @@ class DicomWatcher:
     def stop(self):
         logger.info(f'stopping dicom watcher on {self._directory}')
         self._observer.stop()
-        logger.debug(f'removing {self._directory}')
-        shutil.rmtree(self._directory)
+        logger.info(f'removing {self._directory}')
+        try:
+            shutil.rmtree(self._directory)
+        except FileNotFoundError:
+            logger.info(f'{self._directory} does not exist, moving on')
+            pass
 
 class DicomHandler(PatternMatchingEventHandler):
     def on_created(self, event):
