@@ -8,8 +8,9 @@ from argparse import ArgumentParser
 from rtbold.watcher.directory import DirectoryWatcher
 from rtbold.processor import Processor
 from rtbold.volreg import VolReg
+from rtbold.params import Params
 from rtbold.plotter.dash import DashPlotter
-from rtbold.plotter.matplotlib import MplPlotter
+from rtbold.broker.redis import MessageBroker
 
 logger = logging.getLogger('main')
 logging.basicConfig(level=logging.INFO)
@@ -23,8 +24,11 @@ def main():
     parser.add_argument('--folder', type=Path, default='/tmp/rtbold')
     args = parser.parse_args()
 
+    broker = MessageBroker()
+
     watcher = DirectoryWatcher(args.folder)
     processor = Processor()
+    params = Params(broker=broker)
     volreg = VolReg(mock=args.mock)
     ui = DashPlotter(host=args.host, port=args.port)
 

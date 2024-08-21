@@ -24,13 +24,15 @@ class Processor:
             'path': path,
             'volreg': None
         }
-        logger.info('current state of instances')
+        logger.debug('current state of instances')
         logger.debug(json.dumps(self._instances, default=list, indent=2))
 
         tasks = self.check_volreg(key)
         logger.debug('volreg tasks')
         logger.debug(json.dumps(tasks, indent=2))
         pub.sendMessage('volreg', tasks=tasks)
+        logger.info(f'publishing message to params topic')
+        pub.sendMessage('params', ds=ds)
 
         logger.debug(f'after volreg')
         logger.debug(json.dumps(self._instances, indent=2))
