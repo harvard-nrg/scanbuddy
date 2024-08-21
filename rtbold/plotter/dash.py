@@ -28,11 +28,11 @@ class DashPlotter:
             html.H3(id='sub-title', children=self._subtitle, style={'textAlign': 'center'}),
             dcc.Graph(id='live-update-displacements'),
             dcc.Graph(id='live-update-rotations'),
-            html.Div(id='warning-message', style={'display': 'none'}, children=[
-                html.Div('WARNING', id='warning-text', style={'color': 'red', 'fontSize': 50, 'textAlign': 'center'}),
-                html.Div(id='warning-content', style={'color': 'red', 'fontSize': 25, 'textAlign': 'center'}),
-                html.Button(id='close-warning-button', n_clicks=0, children='Close')
-                ]),
+            html.Div(id='warning-message', children=[
+                html.Div('WARNING', id='warning-text', style={'color': 'red', 'fontSize': 300, 'height': '100vh', 'justifyContent': 'center', 'textAlign': 'center', 'backgroundColor': 'black'}),
+                html.Div(id='warning-content', style={'color': 'red', 'fontSize': 100, 'textAlign': 'center', 'position': 'absolute', 'top': '50%', 'left': '50%', 'transform': 'translate(-50%, -50%)'}),
+                html.Button(id='close-warning-button', n_clicks=0, children='Close', style={'fontSize': 40 ,'marginTop': '50px', 'position': 'absolute', 'top': '70%', 'left': '50%', 'transform': 'translate(-50%, -50%)'})
+                ], style={ 'display': 'none'}),
             dcc.Interval(
                 id='interval-component',
                 interval=1 * 1000
@@ -41,7 +41,7 @@ class DashPlotter:
                 id='warning-interval-component',
                 interval=1 * 1000
             ),
-            dcc.Store(id='warning-message-store', data={'visible': False, 'content': ''})
+           dcc.Store(id='warning-message-store', data={'visible': False, 'content': ''})
         ])
 
 
@@ -54,20 +54,23 @@ class DashPlotter:
         )(self.update_graphs)
 
         self._app.callback(
-            Output('warning-message-store', 'data'),
-            Input('warning-interval-component', 'n_intervals')
+            Output('warning-message-store', 'data', allow_duplicate=True),
+            Input('warning-interval-component', 'n_intervals'),
+            prevent_initial_call=True
         )(self.check_redis_for_warnings)    
 
         self._app.callback(
             Output('warning-message', 'style'),
             Output('warning-content', 'children'),
-            Input('warning-message-store', 'data')
+            Input('warning-message-store', 'data'),
+            prevent_initial_call=True
         )(self.warning_display) 
 
         self._app.callback(
             Output('warning-message-store', 'data'),
             Input('close-warning-button', 'n_clicks'),
-            State('warning-message-store', 'data')
+            State('warning-message-store', 'data'),
+            prevent_initial_call=True
         )(self.close_warning)
 
 
@@ -91,15 +94,16 @@ class DashPlotter:
         return warning_style, warning_content
 
     def check_redis_for_warnings(self, n):
-        logger.info(f"Connecting to redis at {self._redis_client}")
         message = self._redis_client.get('scanbuddy_messages')
-        logger.info(f"Message from redis: {message}")
         if message:
+            logger.debug('message found, showing warning screen')
             return {'visible': True, 'content': message.decode('utf-8')}
         return {'visible': False, 'content': ''}
 
     def close_warning(self, n_clicks, stored_data):
         if n_clicks is not None and n_clicks > 0:
+            logger.debug('warning screen closed by user, deleting redis entry')
+            self._redis_client.delete('scanbuddy_messages')
             return {'visible': False, 'content': ''}
         return stored_data
 
@@ -154,7 +158,8 @@ class DashPlotter:
     def forever(self):
         self._app.run(
             host=self._host,
-            port=self._port
+            port=self._port,
+            #debug=True
         )
 
     def listener(self, instances, subtitle_string):
