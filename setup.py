@@ -13,7 +13,8 @@ requires = [
     'plotly',
     'pandas',
     'retry',
-    'redis'
+    'redis',
+    'pyyaml'
 ]
 
 about = dict()
@@ -33,7 +34,8 @@ setup(
     },
     include_package_data=True,
     scripts=[
-        'scripts/start.py'
+        'scripts/start.py',
+        'scripts/simulator.py'
     ],
     install_requires=requires
 )

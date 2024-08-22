@@ -11,8 +11,7 @@ from pydicom.errors import InvalidDicomError
 from watchdog.observers.polling import PollingObserver
 from watchdog.events import PatternMatchingEventHandler
 
-
-logger = logging.getLogger()
+logger = logging.getLogger(__name__)
 
 class DicomWatcher:
     def __init__(self, directory):

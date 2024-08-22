@@ -9,12 +9,11 @@ class MessageBroker:
     def __init__(self, host='localhost', port=6379):
         self._host = host
         self._port = port
-        self._connstr = f'redis://{self._host}:{self._port}'
+        self._conn = None
+        self._uri = f'redis://{self._host}:{self._port}'
         self.connect()
-        self._connected = False
 
     def connect(self):
-        logger.info(f'connecting to {self._connstr}')
         self._conn = redis.Redis(
             host=self._host,
             port=self._port,
@@ -25,5 +24,5 @@ class MessageBroker:
         try:
             self._conn.set(topic, message)
         except redis.exceptions.ConnectionError as e:
-            logger.error(f'unable to send message to {self._connstr}, service unavailable')
+            logger.error(f'unable to send message to {self._uri}, service unavailable')
             pass

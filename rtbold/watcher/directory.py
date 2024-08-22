@@ -5,7 +5,7 @@ from watchdog.observers.polling import PollingObserver
 from watchdog.events import FileSystemEventHandler
 from rtbold.watcher.dicom import DicomWatcher
 
-logger = logging.getLogger()
+logger = logging.getLogger(__name__)
 
 class DirectoryWatcher:
     def __init__(self, directory):

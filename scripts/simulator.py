@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import sys
 import time
 import shutil
 import logging
@@ -27,7 +28,15 @@ def main():
             if not dest.exists():
                 cleared = True
             elif dest.exists() and not cleared:
-                input(f'press enter to delete {dest}')
+                while True:
+                    ans = input(f'delete {dest} [y/n]: ').strip().lower()
+                    match ans:
+                        case 'y':
+                            break
+                        case 'n':
+                            sys.exit(0)
+                        case _:
+                            pass
                 shutil.rmtree(dest)
                 cleared = True
             dest.mkdir(parents=True, exist_ok=True)

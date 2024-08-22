@@ -6,10 +6,11 @@ import numpy as np
 from pubsub import pub
 from sortedcontainers import SortedDict
 
-logger = logging.getLogger('processor')
+logger = logging.getLogger(__name__)
 
 class Processor:
     def __init__(self):
+        logger.info('foobar')
         self.reset()
         pub.subscribe(self.reset, 'reset')
         pub.subscribe(self.listener, 'incoming')
@@ -28,10 +29,10 @@ class Processor:
         logger.debug(json.dumps(self._instances, default=list, indent=2))
 
         tasks = self.check_volreg(key)
-        logger.debug('volreg tasks')
+        logger.debug('publishing message to volreg topic with the following tasks')
         logger.debug(json.dumps(tasks, indent=2))
         pub.sendMessage('volreg', tasks=tasks)
-        logger.info(f'publishing message to params topic')
+        logger.debug(f'publishing message to params topic')
         pub.sendMessage('params', ds=ds)
 
         logger.debug(f'after volreg')

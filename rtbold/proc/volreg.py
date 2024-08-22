@@ -9,7 +9,7 @@ import numpy as np
 from pubsub import pub
 import time
 
-logger = logging.getLogger('registration')
+logger = logging.getLogger(__name__)
 
 class VolReg:
     def __init__(self, mock=False):

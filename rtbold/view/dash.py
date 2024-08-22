@@ -7,10 +7,11 @@ from pubsub import pub
 import plotly.express as px
 from dash import Dash, html, dcc, callback, Output, Input, State
 
-logger = logging.getLogger('ui')
+logger = logging.getLogger(__name__)
 
-class DashPlotter:
+class View:
     def __init__(self, host='127.0.0.1', port=8080):
+        logger.info('constructing dash view')
         self._app = Dash('Realtime fMRI is fun')
         self._host = host
         self._port = port
@@ -94,12 +95,14 @@ class DashPlotter:
         return warning_style, warning_content
 
     def check_redis_for_warnings(self, n):
+        return {'visible': False, 'content': ''}
+        '''
         message = self._redis_client.get('scanbuddy_messages')
         if message:
             logger.debug('message found, showing warning screen')
             return {'visible': True, 'content': message.decode('utf-8')}
         return {'visible': False, 'content': ''}
-
+        '''
     def close_warning(self, n_clicks, stored_data):
         if n_clicks is not None and n_clicks > 0:
             logger.debug('warning screen closed by user, deleting redis entry')
