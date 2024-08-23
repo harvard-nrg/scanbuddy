@@ -23,6 +23,7 @@ class MessageBroker:
     def publish(self, topic, message):
         try:
             self._conn.set(topic, message)
+            logger.info('message published successfully')
         except redis.exceptions.ConnectionError as e:
             logger.error(f'unable to send message to {self._uri}, service unavailable')
             pass

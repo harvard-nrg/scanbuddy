@@ -9,6 +9,14 @@ from dash import Dash, html, dcc, callback, Output, Input, State
 
 logger = logging.getLogger(__name__)
 
+ERROR_ART = """
+██╗    ██╗ █████╗ ██████╗ ███╗   ██╗██╗███╗   ██╗ ██████╗ 
+██║    ██║██╔══██╗██╔══██╗████╗  ██║██║████╗  ██║██╔════╝ 
+██║ █╗ ██║███████║██████╔╝██╔██╗ ██║██║██╔██╗ ██║██║  ███╗
+██║███╗██║██╔══██║██╔══██╗██║╚██╗██║██║██║╚██╗██║██║   ██║
+╚███╔███╔╝██║  ██║██║  ██║██║ ╚████║██║██║ ╚████║╚██████╔╝
+ ╚══╝╚══╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝╚═╝  ╚═══╝ ╚═════╝ 
+"""
 class View:
     def __init__(self, host='127.0.0.1', port=8080):
         logger.info('constructing dash view')
@@ -18,6 +26,7 @@ class View:
         self._title = 'Realtime fMRI Motion'
         self._subtitle = ''
         self._instances = dict()
+        self._debug = False
         self._redis_client = redis.StrictRedis(host='127.0.0.1', port=6379, db=0)
         self.init_page()
         self.init_callbacks()
@@ -25,15 +34,76 @@ class View:
 
     def init_page(self):
         self._app.layout = html.Div([
-            html.H2(id='graph-title', children=self._title, style={'textAlign': 'center'}),
-            html.H3(id='sub-title', children=self._subtitle, style={'textAlign': 'center'}),
+            html.H2(
+                id='graph-title',
+                children=self._title,
+                style={
+                    'textAlign': 'center'
+                }
+            ),
+            html.H3(
+                id='sub-title',
+                children=self._subtitle,
+                style={
+                    'textAlign': 'center'
+                }
+            ),
             dcc.Graph(id='live-update-displacements'),
             dcc.Graph(id='live-update-rotations'),
-            html.Div(id='warning-message', children=[
-                html.Div('WARNING', id='warning-text', style={'color': 'red', 'fontSize': 300, 'height': '100vh', 'justifyContent': 'center', 'textAlign': 'center', 'backgroundColor': 'black'}),
-                html.Div(id='warning-content', style={'color': 'red', 'fontSize': 100, 'textAlign': 'center', 'position': 'absolute', 'top': '50%', 'left': '50%', 'transform': 'translate(-50%, -50%)'}),
-                html.Button(id='close-warning-button', n_clicks=0, children='Close', style={'fontSize': 40 ,'marginTop': '50px', 'position': 'absolute', 'top': '70%', 'left': '50%', 'transform': 'translate(-50%, -50%)'})
-                ], style={ 'display': 'none'}),
+            html.Dialog(
+                id='warning-dialog',
+                children=[
+                    html.Pre(
+                        ERROR_ART,
+                        id='warning-title',
+                        style={
+                            'color': 'red',
+                            'verticalAlign': 'center',
+                            'fontFamily': 'courier',
+                            'fontSize': '2.5vh',
+                            'fontWeight': 'bold',
+                            'padding': '5vh 5vw 5vh 5vw',
+                            #'border': '1px solid red'
+                        }
+                    ),
+                    html.Pre(
+                        id='warning-content',
+                        style={
+                            'color': 'red',
+                            'fontFamily': 'courier',
+                            'fontSize': '3vh',
+                            'textAlign': 'left',
+                            'padding': '5vh 8vw 5vh 8vw',
+                            #'border': '1px solid red',
+                        }
+                    ),
+                    html.Button(
+                        'DISMISS',
+                        id='close-warning-button',
+                        n_clicks=0,
+                        style={
+                            'color': 'black',
+                            'borderColor': 'grey',
+                            'borderWidth': '1vh',
+                            'backgroundColor': '',
+                            'padding': '1vh 1vw 1vh 1vw',
+                            'fontFamily': 'courier',
+                            'fontSize': '3vh'
+                        }
+                    )
+                ],
+                style={
+                    'backgroundColor': 'black',
+                    'position': 'absolute',
+                    'top': 0,
+                    'height': '100vh',
+                    'width': '100vw',
+                    'padding': 0,
+                    'margin': 0,
+                    'textAlign': 'center',
+                }
+
+            ),
             dcc.Interval(
                 id='interval-component',
                 interval=1 * 1000
@@ -61,53 +131,41 @@ class View:
         )(self.check_redis_for_warnings)    
 
         self._app.callback(
-            Output('warning-message', 'style'),
+            Output('warning-dialog', 'open', allow_duplicate=True),
             Output('warning-content', 'children'),
             Input('warning-message-store', 'data'),
             prevent_initial_call=True
         )(self.warning_display) 
 
         self._app.callback(
+            Output('warning-dialog', 'open'),
             Output('warning-message-store', 'data'),
             Input('close-warning-button', 'n_clicks'),
             State('warning-message-store', 'data'),
             prevent_initial_call=True
         )(self.close_warning)
 
-
     def warning_display(self, stored_data):
         if stored_data['visible']:
-            warning_style = {
-                'position': 'fixed',
-                'top': '0',
-                'left': '0',
-                'width': '100%',
-                'height': '100%',
-                'backgroundColor': 'white',
-                'display': 'block',
-                'zIndex': 1,
-                'textAlign': 'center'
-            }
+            open = True
             warning_content = stored_data['content']
         else:
-            warning_style = {'display': 'none'}
+            open = False
             warning_content = '' 
-        return warning_style, warning_content
+        return open, warning_content
 
     def check_redis_for_warnings(self, n):
-        return {'visible': False, 'content': ''}
-        '''
         message = self._redis_client.get('scanbuddy_messages')
         if message:
             logger.debug('message found, showing warning screen')
             return {'visible': True, 'content': message.decode('utf-8')}
         return {'visible': False, 'content': ''}
-        '''
+
     def close_warning(self, n_clicks, stored_data):
         if n_clicks is not None and n_clicks > 0:
             logger.debug('warning screen closed by user, deleting redis entry')
             self._redis_client.delete('scanbuddy_messages')
-            return {'visible': False, 'content': ''}
+            return False, {'visible': False, 'content': ''}
         return stored_data
 
     def update_graphs(self, n):
@@ -162,7 +220,7 @@ class View:
         self._app.run(
             host=self._host,
             port=self._port,
-            #debug=True
+            debug=self._debug
         )
 
     def listener(self, instances, subtitle_string):

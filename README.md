@@ -8,6 +8,8 @@ params:
             - receive_coil: Head_32
               coil_elements: HEP
         message: |
+            Session: {SESSION} | Scan: {SCAN}
+            
             Detected an issue with head coil elements.
 
             1. Check head coil connection for debris or other obstructions.

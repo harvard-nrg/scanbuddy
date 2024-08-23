@@ -26,7 +26,13 @@ class Params:
 
     def coil_elements(self, ds, args):
         self._checked = True
-        message = args['message']
+        patient_name = ds.get('PatientName', 'UNKNOWN PATIENT')
+        series_number = ds.get('SeriesNumber', 'UNKNOWN SERIES')
+        print(args['message'])
+        message = args['message'].format(
+            SESSION=patient_name,
+            SERIES=series_number
+        )
         receive_coil = self.findcoil(ds)
         coil_elements = self.findcoilelements(ds)
         for bad in args['bad']:
