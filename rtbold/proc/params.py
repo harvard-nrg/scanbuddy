@@ -28,13 +28,14 @@ class Params:
         self._checked = True
         patient_name = ds.get('PatientName', 'UNKNOWN PATIENT')
         series_number = ds.get('SeriesNumber', 'UNKNOWN SERIES')
-        print(args['message'])
-        message = args['message'].format(
-            SESSION=patient_name,
-            SERIES=series_number
-        )
         receive_coil = self.findcoil(ds)
         coil_elements = self.findcoilelements(ds)
+        message = args['message'].format(
+            SESSION=patient_name,
+            SERIES=series_number,
+            RECEIVE_COIL=receive_coil,
+            COIL_ELEMENTS=coil_elements
+        )
         for bad in args['bad']:
             a = ( receive_coil, coil_elements )
             b = ( bad['receive_coil'], bad['coil_elements'] )

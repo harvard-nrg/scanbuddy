@@ -43,7 +43,7 @@ RUN cmake .. && \
 
 # install rtbold
 ARG RTBOLD_PREFIX="/sw/apps/rtbold"
-ARG RTBOLD_VERSION="v0.1.6"
+ARG RTBOLD_VERSION="v0.1.7"
 RUN python3 -m venv "${RTBOLD_PREFIX}" && \
     dnf install -y gcc zlib-devel libjpeg-devel python39-tkinter && \
     "${RTBOLD_PREFIX}/bin/pip" install "git+https://github.com/harvard-nrg/rt_bold.git@${RTBOLD_VERSION}"

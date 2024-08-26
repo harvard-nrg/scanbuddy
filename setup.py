@@ -5,6 +5,7 @@ here = os.path.abspath(os.path.dirname(__file__))
 
 requires = [
     'dash',
+    'dash-bootstrap-components',
     'pydicom',
     'PyPubSub',
     'watchdog',

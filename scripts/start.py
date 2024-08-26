@@ -37,7 +37,7 @@ def main():
         config=config.section('params')
     )
     volreg = VolReg(mock=args.mock)
-    view = View(host=args.host, port=args.port)
+    view = View(host=args.host, port=args.port, debug=args.verbose)
 
     if args.verbose:
         logging.getLogger('rtbold.proc').setLevel(logging.DEBUG)

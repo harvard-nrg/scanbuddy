@@ -37,7 +37,11 @@ class Processor:
 
         logger.debug(f'after volreg')
         logger.debug(json.dumps(self._instances, indent=2))
-        subtitle_string = " ".join([f'Project: {ds.StudyDescription}, ', f'Series: {ds.SeriesDescription}, ', str(f'Scan Number: {ds.SeriesNumber}')])
+        project = ds.get('StudyDescription', '[STUDY]')
+        session = ds.get('PatientID', '[PATIENT]')
+        scandesc = ds.get('SeriesDescription', '[SERIES]')
+        scannum = ds.get('SeriesNumber', '[NUMBER]')
+        subtitle_string = f'{project} • {session} • {scandesc} • {scannum}'
         pub.sendMessage('plot', instances=self._instances, subtitle_string=subtitle_string)
 
     def check_volreg(self, key):

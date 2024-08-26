@@ -1,4 +1,5 @@
 import sys
+import dash
 import redis
 import random
 import logging
@@ -6,6 +7,7 @@ import pandas as pd
 from pubsub import pub
 import plotly.express as px
 from dash import Dash, html, dcc, callback, Output, Input, State
+import dash_bootstrap_components as dbc
 
 logger = logging.getLogger(__name__)
 
@@ -17,78 +19,128 @@ ERROR_ART = """
 ╚███╔███╔╝██║  ██║██║  ██║██║ ╚████║██║██║ ╚████║╚██████╔╝
  ╚══╝╚══╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝╚═╝  ╚═══╝ ╚═════╝ 
 """
+MESSAGE = 'Hello, World!'
+
 class View:
-    def __init__(self, host='127.0.0.1', port=8080):
-        logger.info('constructing dash view')
-        self._app = Dash('Realtime fMRI is fun')
+    def __init__(self, host='127.0.0.1', port=8080, debug=False):
+        self._debug = debug
+        self._title = 'Realtime fMRI Motion'
+        self._app = Dash(
+            self._title,
+            external_stylesheets=[
+                dbc.themes.BOOTSTRAP
+            ]
+        )
+        self._num_warnings = 0
         self._host = host
         self._port = port
-        self._title = 'Realtime fMRI Motion'
-        self._subtitle = ''
+        self._subtitle = 'Ready'
         self._instances = dict()
-        self._debug = False
         self._redis_client = redis.StrictRedis(host='127.0.0.1', port=6379, db=0)
         self.init_page()
         self.init_callbacks()
         pub.subscribe(self.listener, 'plot')
 
     def init_page(self):
+        notifications_button = dbc.NavItem(
+            dbc.Button([
+                'Notifications',
+                dbc.Badge(
+                    id='notification-badge',
+                    color='light',
+                    text_color='primary',
+                    className='ms-1'
+                )],
+                id='notifications-button',
+                color='primary'
+            )
+        )
+
+        branding = dbc.NavbarBrand(
+            self._title,
+            class_name='ms-2'
+        )
+
+        subtitle = dbc.NavItem(
+            self._subtitle,
+            id='sub-title',
+            style={
+                'color': '#e2ded0'
+            }
+        )
+
+        navbar = dbc.Navbar(
+            dbc.Container([
+                dbc.Row(
+                    dbc.Col(branding),
+                ),
+                dbc.Row(
+                    dbc.Col(subtitle, class_name='g-0 ms-auto flex-nowrap mt-3 mt-md-0')
+                ),
+                dbc.Row(
+                    dbc.Col(notifications_button, class_name='ms-2'),
+                )
+            ]),
+            color="dark",
+            dark=True
+        )
+
+        displacements_graph = dcc.Graph(
+            id='live-update-displacements',
+            style={
+                'height': '47vh'
+            }
+        )
+
+        rotations_graph = dcc.Graph(
+            id='live-update-rotations',
+            style={
+                'height': '47vh'
+            }
+        )
+
         self._app.layout = html.Div([
-            html.H2(
-                id='graph-title',
-                children=self._title,
-                style={
-                    'textAlign': 'center'
-                }
-            ),
-            html.H3(
-                id='sub-title',
-                children=self._subtitle,
-                style={
-                    'textAlign': 'center'
-                }
-            ),
-            dcc.Graph(id='live-update-displacements'),
-            dcc.Graph(id='live-update-rotations'),
+            navbar,
+            displacements_graph,
+            rotations_graph,
             html.Dialog(
-                id='warning-dialog',
+                id='bsod-dialog',
                 children=[
                     html.Pre(
                         ERROR_ART,
-                        id='warning-title',
+                        id='bsod-title',
                         style={
                             'color': 'red',
                             'verticalAlign': 'center',
-                            'fontFamily': 'courier',
-                            'fontSize': '2.5vh',
-                            'fontWeight': 'bold',
-                            'padding': '5vh 5vw 5vh 5vw',
+                            'fontFamily': 'courier, monospace',
+                            'fontSize': '1vw',
                             #'border': '1px solid red'
                         }
                     ),
                     html.Pre(
-                        id='warning-content',
+                        MESSAGE,
+                        id='bsod-content',
                         style={
                             'color': 'red',
-                            'fontFamily': 'courier',
-                            'fontSize': '3vh',
+                            'fontFamily': 'courier, monospace',
+                            'fontSize': '1.3vw',
                             'textAlign': 'left',
-                            'padding': '5vh 8vw 5vh 8vw',
+                            'whiteSpace': 'pre-wrap',
+                            'padding': '5vh 5vw 5vh 5vw',
                             #'border': '1px solid red',
                         }
                     ),
                     html.Button(
                         'DISMISS',
-                        id='close-warning-button',
-                        n_clicks=0,
+                        id='bsod-dismiss-button',
                         style={
                             'color': 'black',
                             'borderColor': 'grey',
                             'borderWidth': '1vh',
                             'backgroundColor': '',
                             'padding': '1vh 1vw 1vh 1vw',
-                            'fontFamily': 'courier',
-                            'fontSize': '3vh'
+                            'fontFamily': 'courier, monospace',
+                            'fontSize': '1.5vw'
                         }
                     )
                 ],
@@ -105,14 +157,13 @@ class View:
 
             ),
             dcc.Interval(
-                id='interval-component',
+                id='plot-interval-component',
                 interval=1 * 1000
             ),
             dcc.Interval(
-                id='warning-interval-component',
+                id='message-interval-component',
                 interval=1 * 1000
-            ),
-           dcc.Store(id='warning-message-store', data={'visible': False, 'content': ''})
+            )
         ])
 
 
@@ -121,52 +172,34 @@ class View:
             Output('live-update-displacements', 'figure'),
             Output('live-update-rotations', 'figure'),
             Output('sub-title', 'children'),
-            Input('interval-component', 'n_intervals'),
+            Input('plot-interval-component', 'n_intervals'),
         )(self.update_graphs)
 
         self._app.callback(
-            Output('warning-message-store', 'data', allow_duplicate=True),
-            Input('warning-interval-component', 'n_intervals'),
+            Output('bsod-dialog', 'open', allow_duplicate=True),
+            Output('bsod-content', 'children', allow_duplicate=True),
+            Output('notification-badge', 'children'),
+            Input('message-interval-component', 'n_intervals'),
             prevent_initial_call=True
-        )(self.check_redis_for_warnings)    
+        )(self.check_messages)
 
         self._app.callback(
-            Output('warning-dialog', 'open', allow_duplicate=True),
-            Output('warning-content', 'children'),
-            Input('warning-message-store', 'data'),
+            Output('bsod-dialog', 'open', allow_duplicate=True),
+            Output('bsod-content', 'children', allow_duplicate=True),
+            Input('bsod-dismiss-button', 'n_clicks'),
             prevent_initial_call=True
-        )(self.warning_display) 
+        )(self.close_bsod)
 
-        self._app.callback(
-            Output('warning-dialog', 'open'),
-            Output('warning-message-store', 'data'),
-            Input('close-warning-button', 'n_clicks'),
-            State('warning-message-store', 'data'),
-            prevent_initial_call=True
-        )(self.close_warning)
-
-    def warning_display(self, stored_data):
-        if stored_data['visible']:
-            open = True
-            warning_content = stored_data['content']
-        else:
-            open = False
-            warning_content = '' 
-        return open, warning_content
-
-    def check_redis_for_warnings(self, n):
+    def check_messages(self, n_intervals):
         message = self._redis_client.get('scanbuddy_messages')
         if message:
-            logger.debug('message found, showing warning screen')
-            return {'visible': True, 'content': message.decode('utf-8')}
-        return {'visible': False, 'content': ''}
-
-    def close_warning(self, n_clicks, stored_data):
-        if n_clicks is not None and n_clicks > 0:
-            logger.debug('warning screen closed by user, deleting redis entry')
+            self._num_warnings += 1
             self._redis_client.delete('scanbuddy_messages')
-            return False, {'visible': False, 'content': ''}
-        return stored_data
+            return True, message.decode(), self._num_warnings
+        return dash.no_update,dash.no_update,dash.no_update
+
+    def close_bsod(self, n_clicks):
+        return False, 'Hello, World!'
 
     def update_graphs(self, n):
         df = self.todataframe()
@@ -176,14 +209,13 @@ class View:
         return disps,rots,title
 
     def get_subtitle(self):
-        title = self._subtitle
-        return title
+        return self._subtitle
 
     def displacements(self, df):
         fig = px.line(df, x='N', y=['x', 'y', 'z'])
         fig.update_layout(
             title={
-                'text': 'Translations',
+                'text': f'Translations',
                 'x': 0.5
             },
             yaxis_title='mm',
@@ -197,7 +229,7 @@ class View:
         fig = px.line(df, x='N', y=['roll', 'pitch', 'yaw'])
         fig.update_layout(
             title={
-                'text': 'Rotations',
+                'text': f'Rotations',
                 'x': 0.5
             },
             yaxis_title='degrees (ccw)',
@@ -226,3 +258,4 @@ class View:
     def listener(self, instances, subtitle_string):
         self._instances = instances
         self._subtitle = subtitle_string
+
