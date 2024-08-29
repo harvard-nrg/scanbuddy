@@ -221,7 +221,35 @@ class View:
             yaxis_title='mm',
             legend={
                 'title': ''
-            }
+            },
+            shapes=[
+                {  # 1 mm line
+                    'type': 'line',
+                    'xref': 'paper',
+                    'x0': 0,
+                    'x1': 1,
+                    'y0': 1,
+                    'y1': 1,
+                    'line': {
+                        'color': 'black',
+                        'width': 2,
+                        'dash': 'solid',
+                    },
+                },
+                {  # -1 mm line
+                    'type': 'line',
+                    'xref': 'paper',
+                    'x0': 0,
+                    'x1': 1,
+                    'y0': -1,
+                    'y1': -1,
+                    'line': {
+                        'color': 'black',
+                        'width': 2,
+                        'dash': 'solid',
+                    },
+                },
+            ]
         )
         return fig
 
