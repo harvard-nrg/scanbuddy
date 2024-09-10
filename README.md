@@ -1,5 +1,13 @@
-## Config file
+## Example config file
 ```yaml
+app:
+    title: Realtime fMRI Motion
+    session_secret:
+        env: SCANBUDDY_SESSION_KEY
+    auth:
+        user: scanbuddy
+        pass:
+            env: SCANBUDDY_PASS
 params:
     coil_elements:
         bad:
@@ -8,7 +16,9 @@ params:
             - receive_coil: Head_32
               coil_elements: HEP
         message: |
-            Session: {SESSION} | Scan: {SCAN}
+            Session: {SESSION}
+            Series: {SERIES}
+            Coil: {RECEIVE_COIL}, {COIL_ELEMENTS}
             
             Detected an issue with head coil elements.
 

@@ -10,7 +10,6 @@ logger = logging.getLogger(__name__)
 
 class Processor:
     def __init__(self):
-        logger.info('foobar')
         self.reset()
         pub.subscribe(self.reset, 'reset')
         pub.subscribe(self.listener, 'incoming')

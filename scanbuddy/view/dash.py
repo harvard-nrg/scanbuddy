@@ -1,11 +1,14 @@
+import os
 import sys
 import dash
 import redis
 import random
+import secrets
 import logging
 import pandas as pd
 from pubsub import pub
 import plotly.express as px
+import dash_auth
 from dash import Dash, html, dcc, callback, Output, Input, State
 import dash_bootstrap_components as dbc
 
@@ -19,27 +22,68 @@ ERROR_ART = """
 ╚███╔███╔╝██║  ██║██║  ██║██║ ╚████║██║██║ ╚████║╚██████╔╝
  ╚══╝╚══╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝╚═╝  ╚═══╝ ╚═════╝ 
 """
-MESSAGE = 'Hello, World!'
+DEFAULT_MESSAGE = 'Hello, World!'
 
 class View:
-    def __init__(self, host='127.0.0.1', port=8080, debug=False):
-        self._debug = debug
-        self._title = 'Realtime fMRI Motion'
+    def __init__(self, host='127.0.0.1', port=8080, config=None, debug=False):
+        self._config = config
+        self._host = self._config.find_one('$.app.host', default=host)
+        self._port = self._config.find_one('$.app.port', default=port)
+        self._debug = self._config.find_one('$.app.debug', default=debug)
+        self._title = self._config.find_one('$.app.title', default='Realtime fMRI Motion')
+        self._subtitle = 'Ready'
+        self._num_warnings = 0
+        self._instances = dict()
+        self._redis_client = redis.StrictRedis(
+            host=self._config.find_one('$.broker.host', default='127.0.0.1'),
+            port=self._config.find_one('$.broker.port', default=6379),
+            db=0
+        )
+        self.init_app()
+        self.init_page()
+        self.init_callbacks()
+        pub.subscribe(self.listener, 'plot')
+
+    def init_app(self):
         self._app = Dash(
             self._title,
             external_stylesheets=[
                 dbc.themes.BOOTSTRAP
             ]
         )
-        self._num_warnings = 0
-        self._host = host
-        self._port = port
-        self._subtitle = 'Ready'
-        self._instances = dict()
-        self._redis_client = redis.StrictRedis(host='127.0.0.1', port=6379, db=0)
-        self.init_page()
-        self.init_callbacks()
-        pub.subscribe(self.listener, 'plot')
+        username = self._config.find_one('$.app.auth.user')
+        passphrase = self._get_passphrase()
+        auth = {
+            username: passphrase
+        }
+        session_secret_key = self._session_secret()
+        dash_auth.BasicAuth(
+            self._app,
+            auth,
+            secret_key=session_secret_key
+        )
+
+    def _session_secret(self):
+        envar = self._config.find_one('$.app.session_secret.env')
+        if not envar:
+            raise AuthError('you must specify a session secret key environment variable')
+        if envar not in os.environ:
+            raise AuthError(f'environment variable "{envar}" is not defined')
+        value = os.environ[envar]
+        if not value.strip():
+            raise AuthError('value stored in environment variable "{envar}" cannot be empty')
+        return value
+
+    def _get_passphrase(self):
+        envar = self._config.find_one('$.app.auth.pass.env')
+        if not envar:
+            raise AuthError('you must specify an authentication passphrase environment variable')
+        if envar not in os.environ:
+            raise AuthError(f'environment variable "{envar}" is not defined')
+        value = os.environ[envar]
+        if not value.strip():
+            raise AuthError(f'value stored in environment variable "{envar}" cannot be empty')
+        return value
 
     def init_page(self):
         notifications_button = dbc.NavItem(
@@ -148,7 +192,7 @@ class View:
                         }
                     ),
                     html.Pre(
-                        MESSAGE,
+                        DEFAULT_MESSAGE,
                         id='bsod-content',
                         style={
                             'color': 'red',
@@ -359,3 +403,5 @@ class View:
         self._instances = instances
         self._subtitle = subtitle_string
 
+class AuthError(Exception):
+    pass

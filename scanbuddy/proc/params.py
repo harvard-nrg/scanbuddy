@@ -6,7 +6,7 @@ logger = logging.getLogger(__name__)
 
 class Params:
     def __init__(self, config, broker=None):
-        self._config = config
+        self._config = config.find_one('$.params', dict())
         self._broker = broker
         self._checked = False
         pub.subscribe(self.listener, 'params')

@@ -34,10 +34,15 @@ def main():
     processor = Processor()
     params = Params(
         broker=broker,
-        config=config.section('params')
+        config=config
     )
     volreg = VolReg(mock=args.mock)
-    view = View(host=args.host, port=args.port, debug=args.verbose)
+    view = View(
+        host=args.host,
+        port=args.port,
+        config=config,
+        debug=args.verbose
+    )
 
     if args.verbose:
         logging.getLogger('scanbuddy.proc').setLevel(logging.DEBUG)
