@@ -54,12 +54,12 @@ class View:
                 id='notifications-button',
                 color='primary'
             )
-        )
+        )   
 
         branding = dbc.NavbarBrand(
             self._title,
             class_name='ms-2'
-        )
+        )   
 
         subtitle = dbc.NavItem(
             self._subtitle,
@@ -67,7 +67,7 @@ class View:
             style={
                 'color': '#e2ded0'
             }
-        )
+        )   
 
         navbar = dbc.Navbar(
             dbc.Container([
@@ -83,26 +83,57 @@ class View:
             ]),
             color="dark",
             dark=True
-        )
+        )   
 
         displacements_graph = dcc.Graph(
             id='live-update-displacements',
             style={
                 'height': '47vh'
             }
-        )
+        )   
 
         rotations_graph = dcc.Graph(
             id='live-update-rotations',
             style={
                 'height': '47vh'
             }
+        )   
+
+        metrics_card = dbc.Card(
+            [
+                dbc.CardBody(
+                    [
+                        html.H5("Motion Metrics", className="card-title", style={"borderBottom": "1px solid black", "marginBottom": "0px", "textAlign": "center", "padding": "10px"}),
+                        dbc.Row([
+                            dbc.Col("Number of Movements > .5 mm", width={"size": 8, "order": 1}, style={"borderRight": "1px solid black", "borderBottom": "1px solid black", "textAlign": "center", "padding": "10px"}),
+                            dbc.Col(id='movements-05mm', children="0", width={"size": 4, "order": 2}, style={"borderBottom": "1px solid black", "textAlign": "center", "padding": "10px"})
+                        ], style={"margin": "0px"}),
+                        dbc.Row([
+                            dbc.Col("Number of Movements > 1 mm", width={"size": 8, "order": 1}, style={"borderRight": "1px solid black", "textAlign": "center", "padding": "10px"}),
+                            dbc.Col(id='movements-1mm', children="0", width={"size": 4, "order": 2}, style={"textAlign": "center", "padding": "10px"})
+                        ], style={"margin": "0px"})
+                    ],
+                    style={"border": "1px solid black", "padding": "0"})
+            ],
+            style={"width": "24rem", "border": "1px solid black", "backgroundColor": "#ffe4e1"},
+            className="m-2"
         )
 
         self._app.layout = html.Div([
             navbar,
-            displacements_graph,
-            rotations_graph,
+            dbc.Row(
+                [
+                    dbc.Col(metrics_card, width=2, style={"marginTop": "50px"}),
+                    dbc.Col(
+                        [
+                            displacements_graph,
+                            rotations_graph,
+                        ],
+                        width=10
+                    ),
+                ],
+                className="g-0"
+            ),
             html.Dialog(
                 id='bsod-dialog',
                 children=[
@@ -114,7 +145,6 @@ class View:
                             'verticalAlign': 'center',
                             'fontFamily': 'courier, monospace',
                             'fontSize': '1vw',
-                            #'border': '1px solid red'
                         }
                     ),
                     html.Pre(
@@ -127,7 +157,6 @@ class View:
                             'textAlign': 'left',
                             'whiteSpace': 'pre-wrap',
                             'padding': '5vh 5vw 5vh 5vw',
-                            #'border': '1px solid red',
                         }
                     ),
                     html.Button(
@@ -154,7 +183,6 @@ class View:
                     'margin': 0,
                     'textAlign': 'center',
                 }
-
             ),
             dcc.Interval(
                 id='plot-interval-component',
@@ -190,6 +218,12 @@ class View:
             prevent_initial_call=True
         )(self.close_bsod)
 
+        self._app.callback(
+            Output('movements-05mm', 'children'),
+            Output('movements-1mm', 'children'),
+            Input('plot-interval-component', 'n_intervals'),
+        )(self.update_metrics)
+
     def check_messages(self, n_intervals):
         message = self._redis_client.get('scanbuddy_messages')
         if message:
@@ -207,6 +241,12 @@ class View:
         rots = self.rotations(df)
         title = self.get_subtitle()
         return disps,rots,title
+
+    def update_metrics(self, n):
+        df = self.todataframe()
+        movements_05mm = (df[['x', 'y', 'z']].abs() > 0.5).any(axis=1).sum() + (df[['x', 'y', 'z']].abs() < -0.5).any(axis=1).sum()
+        movements_1mm = (df[['x', 'y', 'z']].abs() > 1.0).any(axis=1).sum() + (df[['x', 'y', 'z']].abs() < -1.0).any(axis=1).sum()
+        return str(movements_05mm), str(movements_1mm)
 
     def get_subtitle(self):
         return self._subtitle
