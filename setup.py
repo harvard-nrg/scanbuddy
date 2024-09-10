@@ -15,7 +15,8 @@ requires = [
     'pandas',
     'retry',
     'redis',
-    'pyyaml'
+    'pyyaml',
+    'jsonpath-ng'
 ]
 
 about = dict()

@@ -1,5 +1,6 @@
 import yaml
 import logging
+from jsonpath_ng import parse
 
 logger = logging.getLogger(__name__)
 
@@ -12,12 +13,13 @@ class Config:
         with open(self._file) as fo:
             self._config = yaml.safe_load(fo)
         
-    def section(self, name):
-        try:
-            return self._config[name]
-        except KeyError:
-            raise ConfigError(f'section "{name}" not found within config file {self._file}')
-       
+    def find_one(self, expr, default=None):
+        jsonpath = parse(expr)
+        match = jsonpath.find(self._config)  
+        if not match:
+            return default
+        return match.pop().value
+
 class ConfigError(Exception):
     pass
 
