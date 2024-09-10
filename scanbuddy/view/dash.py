@@ -147,20 +147,75 @@ class View:
             [
                 dbc.CardBody(
                     [
-                        html.H5("Motion Metrics", className="card-title", style={"borderBottom": "1px solid black", "marginBottom": "0px", "textAlign": "center", "padding": "10px"}),
-                        dbc.Row([
-                            dbc.Col("Number of Movements > .5 mm", width={"size": 8, "order": 1}, style={"borderRight": "1px solid black", "borderBottom": "1px solid black", "textAlign": "center", "padding": "10px"}),
-                            dbc.Col(id='movements-05mm', children="0", width={"size": 4, "order": 2}, style={"borderBottom": "1px solid black", "textAlign": "center", "padding": "10px"})
-                        ], style={"margin": "0px"}),
-                        dbc.Row([
-                            dbc.Col("Number of Movements > 1 mm", width={"size": 8, "order": 1}, style={"borderRight": "1px solid black", "textAlign": "center", "padding": "10px"}),
-                            dbc.Col(id='movements-1mm', children="0", width={"size": 4, "order": 2}, style={"textAlign": "center", "padding": "10px"})
-                        ], style={"margin": "0px"})
+                        html.H5(
+                            "Motion Metrics", 
+                            className="card-title", 
+                            style={
+                                "borderBottom": "1px solid black", 
+                                "marginBottom": "0px", 
+                                "textAlign": "center", 
+                                "padding": "1rem"
+                            }
+                        ),
+                        dbc.Row(
+                            [
+                                dbc.Col(
+                                    "Number of Movements > .5 mm", 
+                                    width=8, 
+                                    style={
+                                        "borderRight": "1px solid black", 
+                                        "borderBottom": "1px solid black", 
+                                        "textAlign": "center", 
+                                        "padding": "1rem"
+                                    }
+                                ),
+                                dbc.Col(
+                                    id='movements-05mm', 
+                                    children="0", 
+                                    width=4, 
+                                    style={
+                                        "borderBottom": "1px solid black", 
+                                        "textAlign": "center", 
+                                        "padding": "1rem"
+                                    }
+                                )
+                            ],
+                            style={"margin": "0px"}
+                        ),
+                        dbc.Row(
+                            [
+                                dbc.Col(
+                                    "Number of Movements > 1 mm", 
+                                    width=8, 
+                                    style={
+                                        "borderRight": "1px solid black", 
+                                        "textAlign": "center", 
+                                        "padding": "1rem"
+                                    }
+                                ),
+                                dbc.Col(
+                                    id='movements-1mm', 
+                                    children="0", 
+                                    width=4, 
+                                    style={
+                                        "textAlign": "center", 
+                                        "padding": "1rem"
+                                    }
+                                )
+                            ],
+                            style={"margin": "0px"}
+                        )
                     ],
-                    style={"border": "1px solid black", "padding": "0"})
+                    style={"border": "1px solid black", "padding": "0"}
+                )
             ],
-            style={"width": "24rem", "border": "1px solid black", "backgroundColor": "#ffe4e1"},
-            className="m-2"
+            style={
+                "width": "16vw", 
+                "maxWidth": "16vw", 
+                "border": "1px solid black", 
+                "backgroundColor": "#ffe4e1", 
+                "margin": "1rem"
+            }
         )
 
         self._app.layout = html.Div([
