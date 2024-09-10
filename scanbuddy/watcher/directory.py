@@ -3,7 +3,7 @@ import logging
 from pathlib import Path
 from watchdog.observers.polling import PollingObserver
 from watchdog.events import FileSystemEventHandler
-from rtbold.watcher.dicom import DicomWatcher
+from scanbuddy.watcher.dicom import DicomWatcher
 
 logger = logging.getLogger(__name__)
 

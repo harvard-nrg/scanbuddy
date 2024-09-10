@@ -19,7 +19,7 @@ requires = [
 ]
 
 about = dict()
-with open(os.path.join(here, 'rtbold', '__version__.py'), 'r') as f:
+with open(os.path.join(here, 'scanbuddy', '__version__.py'), 'r') as f:
     exec(f.read(), about)
 
 setup(

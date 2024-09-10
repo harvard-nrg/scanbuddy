@@ -6,13 +6,13 @@ import logging
 from pubsub import pub
 from pathlib import Path
 from argparse import ArgumentParser
-from rtbold.watcher.directory import DirectoryWatcher
-from rtbold.proc import Processor
-from rtbold.proc.volreg import VolReg
-from rtbold.proc.params import Params
-from rtbold.view.dash import View
-from rtbold.broker.redis import MessageBroker
-from rtbold.config import Config
+from scanbuddy.watcher.directory import DirectoryWatcher
+from scanbuddy.proc import Processor
+from scanbuddy.proc.volreg import VolReg
+from scanbuddy.proc.params import Params
+from scanbuddy.view.dash import View
+from scanbuddy.broker.redis import MessageBroker
+from scanbuddy.config import Config
 
 logger = logging.getLogger('main')
 logging.basicConfig(level=logging.INFO)
@@ -20,10 +20,10 @@ logging.basicConfig(level=logging.INFO)
 def main():
     parser = ArgumentParser()
     parser.add_argument('-m', '--mock', action='store_true')
-    parser.add_argument('-c', '--config', type=Path)
+    parser.add_argument('-c', '--config', required=True, type=Path)
     parser.add_argument('--host', type=str, default='127.0.0.1')
     parser.add_argument('--port', type=int, default=8080)
-    parser.add_argument('--folder', type=Path, default='/tmp/rtbold')
+    parser.add_argument('--folder', type=Path, required=True)
     parser.add_argument('-v', '--verbose', action='store_true')
     args = parser.parse_args()
 
@@ -40,10 +40,10 @@ def main():
     view = View(host=args.host, port=args.port, debug=args.verbose)
 
     if args.verbose:
-        logging.getLogger('rtbold.proc').setLevel(logging.DEBUG)
-        logging.getLogger('rtbold.proc.params').setLevel(logging.DEBUG)
-        logging.getLogger('rtbold.proc.volreg').setLevel(logging.DEBUG)
-        logging.getLogger('rtbold.view.dash').setLevel(logging.DEBUG)
+        logging.getLogger('scanbuddy.proc').setLevel(logging.DEBUG)
+        logging.getLogger('scanbuddy.proc.params').setLevel(logging.DEBUG)
+        logging.getLogger('scanbuddy.proc.volreg').setLevel(logging.DEBUG)
+        logging.getLogger('scanbuddy.view.dash').setLevel(logging.DEBUG)
    
     # logging from this module is useful, but noisy
     logging.getLogger('werkzeug').setLevel(logging.ERROR)

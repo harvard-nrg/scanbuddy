@@ -225,11 +225,15 @@ class View:
         )(self.update_metrics)
 
     def check_messages(self, n_intervals):
-        message = self._redis_client.get('scanbuddy_messages')
-        if message:
-            self._num_warnings += 1
-            self._redis_client.delete('scanbuddy_messages')
-            return True, message.decode(), self._num_warnings
+        try:
+            message = self._redis_client.get('scanbuddy_messages')
+            if message:
+                self._num_warnings += 1
+                self._redis_client.delete('scanbuddy_messages')
+                return True, message.decode(), self._num_warnings
+        except redis.exceptions.ConnectionError as e:
+            logger.warning(f'unable to get messages from message broker, service unavailable')
+
         return dash.no_update,dash.no_update,dash.no_update
 
     def close_bsod(self, n_clicks):
