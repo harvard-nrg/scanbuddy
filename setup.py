@@ -16,7 +16,8 @@ requires = [
     'retry',
     'redis',
     'pyyaml',
-    'jsonpath-ng'
+    'jsonpath-ng',
+    'dash_auth'
 ]
 
 about = dict()
