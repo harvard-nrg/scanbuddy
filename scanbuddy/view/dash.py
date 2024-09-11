@@ -86,6 +86,7 @@ class View:
         return value
 
     def init_page(self):
+
         notifications_button = dbc.NavItem(
             dbc.Button([
                 'Notifications',
@@ -154,19 +155,21 @@ class View:
                                 "borderBottom": "1px solid black", 
                                 "marginBottom": "0px", 
                                 "textAlign": "center", 
-                                "padding": "1rem"
+                                "padding": "1rem",
+                                "fontSize": "1.1vw"
                             }
                         ),
                         dbc.Row(
                             [
                                 dbc.Col(
-                                    "Number of Movements > .5 mm", 
+                                    "Movements > .5 mm", 
                                     width=8, 
                                     style={
                                         "borderRight": "1px solid black", 
                                         "borderBottom": "1px solid black", 
                                         "textAlign": "center", 
-                                        "padding": "1rem"
+                                        "padding": "2rem",
+                                        "fontSize": ".89vw"
                                     }
                                 ),
                                 dbc.Col(
@@ -176,7 +179,8 @@ class View:
                                     style={
                                         "borderBottom": "1px solid black", 
                                         "textAlign": "center", 
-                                        "padding": "1rem"
+                                        "padding": "2rem",
+                                        "fontSize": "1vw"
                                     }
                                 )
                             ],
@@ -185,12 +189,14 @@ class View:
                         dbc.Row(
                             [
                                 dbc.Col(
-                                    "Number of Movements > 1 mm", 
+                                    "Movements > 1 mm", 
                                     width=8, 
                                     style={
                                         "borderRight": "1px solid black", 
+                                        "borderBottom": "1px solid black", 
                                         "textAlign": "center", 
-                                        "padding": "1rem"
+                                        "padding": "2rem",
+                                        "fontSize": ".9vw"
                                     }
                                 ),
                                 dbc.Col(
@@ -198,13 +204,42 @@ class View:
                                     children="0", 
                                     width=4, 
                                     style={
+                                        "borderBottom": "1px solid black", 
                                         "textAlign": "center", 
-                                        "padding": "1rem"
+                                        "padding": "2rem",
+                                        "fontSize": "1vw"
                                     }
                                 )
                             ],
                             style={"margin": "0px"}
-                        )
+                        ),
+                        dbc.Row(
+                            [
+                                dbc.Col(
+                                    "Max Abs. Motion", 
+                                    width=8, 
+                                    style={
+                                        "borderRight": "1px solid black", 
+                                        "textAlign": "center", 
+                                        "padding": "2rem",
+                                        "fontSize": ".9vw",
+                                        "borderBottom": "1px solid black" # Adding bottom border for consistent styling
+                                    }
+                                ),
+                                dbc.Col(
+                                    id='max-abs-motion', 
+                                    children="0", 
+                                    width=4, 
+                                    style={
+                                        "borderBottom": "1px solid black", 
+                                        "textAlign": "center", 
+                                        "padding": "2rem",
+                                        "fontSize": ".9vw"
+                                    }
+                                )
+                            ],
+                            style={"margin": "0px"}
+                        ),
                     ],
                     style={"border": "1px solid black", "padding": "0"}
                 )
@@ -300,7 +335,7 @@ class View:
             Output('live-update-rotations', 'figure'),
             Output('sub-title', 'children'),
             Input('plot-interval-component', 'n_intervals'),
-        )(self.update_graphs)
+        )(self.update_graphs)   
 
         self._app.callback(
             Output('bsod-dialog', 'open', allow_duplicate=True),
@@ -308,18 +343,19 @@ class View:
             Output('notification-badge', 'children'),
             Input('message-interval-component', 'n_intervals'),
             prevent_initial_call=True
-        )(self.check_messages)
+        )(self.check_messages)  
 
         self._app.callback(
             Output('bsod-dialog', 'open', allow_duplicate=True),
             Output('bsod-content', 'children', allow_duplicate=True),
             Input('bsod-dismiss-button', 'n_clicks'),
             prevent_initial_call=True
-        )(self.close_bsod)
+        )(self.close_bsod)  
 
         self._app.callback(
             Output('movements-05mm', 'children'),
             Output('movements-1mm', 'children'),
+            Output('max-abs-motion', 'children'),
             Input('plot-interval-component', 'n_intervals'),
         )(self.update_metrics)
 
@@ -349,21 +385,60 @@ class View:
         df = self.todataframe()
         movements_05mm = (df[['x', 'y', 'z']].abs() > 0.5).any(axis=1).sum() + (df[['x', 'y', 'z']].abs() < -0.5).any(axis=1).sum()
         movements_1mm = (df[['x', 'y', 'z']].abs() > 1.0).any(axis=1).sum() + (df[['x', 'y', 'z']].abs() < -1.0).any(axis=1).sum()
-        return str(movements_05mm), str(movements_1mm)
+        
+        if not df.empty:
+            max_abs_motion = round(df[['x', 'y', 'z']].abs().max().max(), 3)
+        else:
+            max_abs_motion = 0  
+
+        return str(movements_05mm), str(movements_1mm), str(max_abs_motion)
 
     def get_subtitle(self):
         return self._subtitle
+
 
     def displacements(self, df):
         fig = px.line(df, x='N', y=['x', 'y', 'z'])
         fig.update_layout(
             title={
-                'text': f'Translations',
-                'x': 0.5
+                'text': 'Translations',
+                'x': 0.5,
+                'font': {
+                    'size': 24  # Adjust the size as needed
+                }
             },
-            yaxis_title='mm',
+            xaxis_title={
+                'text': 'N',
+                'font': {
+                    'size': 20  # Adjust the size as needed
+                }
+            },
+            yaxis_title={
+                'text': 'mm',
+                'font': {
+                    'size': 20  # Adjust the size as needed
+                }
+            },
+            xaxis={
+                'tickfont': {
+                    'size': 16  # Adjust the size as needed
+                }
+            },
+            yaxis={
+                'tickfont': {
+                    'size': 24  # Adjust the size as needed
+                }
+            },
+            legend_title={
+                'text': '',
+                'font': {
+                    'size': 16  # Adjust the size as needed
+                }
+            },
             legend={
-                'title': ''
+                'font': {
+                    'size': 16  # Adjust the size as needed
+                }
             },
             shapes=[
                 {  # 1 mm line
@@ -392,6 +467,34 @@ class View:
                         'dash': 'solid',
                     },
                 },
+                {  # Solid black line on the left side
+                    'type': 'line',
+                    'xref': 'paper',
+                    'yref': 'y',
+                    'y0': -1,
+                    'y1': 1,
+                    'x0': 0,
+                    'x1': 0,
+                    'line': {
+                        'color': 'black',
+                        'width': 2,
+                        'dash': 'solid',
+                    },
+                },
+                {  # Solid black line on the right side
+                    'type': 'line',
+                    'xref': 'paper',
+                    'yref': 'y',
+                    'y0': -1,
+                    'y1': 1,
+                    'x0': 1,
+                    'x1': 1,
+                    'line': {
+                        'color': 'black',
+                        'width': 2,
+                        'dash': 'solid',
+                    },
+                },
             ]
         )
         return fig
@@ -400,12 +503,44 @@ class View:
         fig = px.line(df, x='N', y=['roll', 'pitch', 'yaw'])
         fig.update_layout(
             title={
-                'text': f'Rotations',
-                'x': 0.5
+                'text': 'Rotations',
+                'x': 0.5,
+                'font': {
+                    'size': 24  # Adjust the size as needed
+                }
             },
-            yaxis_title='degrees (ccw)',
+            xaxis_title={
+                'text': 'N',
+                'font': {
+                    'size': 20  # Adjust the size as needed
+                }
+            },
+            yaxis_title={
+                'text': 'degrees (ccw)',
+                'font': {
+                    'size': 20  # Adjust the size as needed
+                }
+            },
+            xaxis={
+                'tickfont': {
+                    'size': 16  # Adjust the size as needed
+                }
+            },
+            yaxis={
+                'tickfont': {
+                    'size': 24  # Adjust the size as needed
+                }
+            },
+            legend_title={
+                'text': '',
+                'font': {
+                    'size': 16  # Adjust the size as needed
+                }
+            },
             legend={
-                'title': ''
+                'font': {
+                    'size': 16  # Adjust the size as needed
+                }
             },
             shapes=[
                 {  # 1 degree line
@@ -428,6 +563,34 @@ class View:
                     'x1': 1,
                     'y0': -.5,
                     'y1': -.5,
+                    'line': {
+                        'color': 'black',
+                        'width': 2,
+                        'dash': 'solid',
+                    },
+                },
+                {  # Solid black line on the left side
+                    'type': 'line',
+                    'xref': 'paper',
+                    'yref': 'y',
+                    'y0': -.5,
+                    'y1': .5,
+                    'x0': 0,
+                    'x1': 0,
+                    'line': {
+                        'color': 'black',
+                        'width': 2,
+                        'dash': 'solid',
+                    },
+                },
+                {  # Solid black line on the right side
+                    'type': 'line',
+                    'xref': 'paper',
+                    'yref': 'y',
+                    'y0': -.5,
+                    'y1': .5,
+                    'x0': 1,
+                    'x1': 1,
                     'line': {
                         'color': 'black',
                         'width': 2,
