@@ -162,14 +162,45 @@ class View:
                         dbc.Row(
                             [
                                 dbc.Col(
-                                    "Movements > .5 mm", 
-                                    width=8, 
+                                    "Number of Volumes", 
+                                    width=8,
                                     style={
                                         "borderRight": "1px solid black", 
                                         "borderBottom": "1px solid black", 
+                                        "display": "flex", 
+                                        "alignItems": "center", 
+                                        "justifyContent": "flex-end",
+                                        "paddingRight": "5px",
+                                        "fontSize": "1.1vw"
+                                    }
+                                ),
+                                dbc.Col(
+                                    id='number-of-vols', 
+                                    children="0", 
+                                    width=4, 
+                                    style={
+                                        "borderBottom": "1px solid black", 
                                         "textAlign": "center", 
-                                        "padding": "2rem",
-                                        "fontSize": ".89vw"
+                                        "padding": "1rem",
+                                        "fontSize": "1.5vw"
+                                    }
+                                )
+                            ],
+                            style={"margin": "0px"}
+                        ),
+                        dbc.Row(
+                            [
+                                dbc.Col(
+                                    "Movements > .5 mm", 
+                                    width=8,
+                                    style={
+                                        "borderRight": "1px solid black", 
+                                        "borderBottom": "1px solid black", 
+                                        "display": "flex", 
+                                        "alignItems": "center", 
+                                        "justifyContent": "flex-end",
+                                        "paddingRight": "5px",
+                                        "fontSize": "1.1vw"
                                     }
                                 ),
                                 dbc.Col(
@@ -179,8 +210,8 @@ class View:
                                     style={
                                         "borderBottom": "1px solid black", 
                                         "textAlign": "center", 
-                                        "padding": "2rem",
-                                        "fontSize": "1vw"
+                                        "padding": "1rem",
+                                        "fontSize": "2vw"
                                     }
                                 )
                             ],
@@ -194,9 +225,11 @@ class View:
                                     style={
                                         "borderRight": "1px solid black", 
                                         "borderBottom": "1px solid black", 
-                                        "textAlign": "center", 
-                                        "padding": "2rem",
-                                        "fontSize": ".9vw"
+                                        "display": "flex", 
+                                        "alignItems": "center", 
+                                       "justifyContent": "flex-end",
+                                        "paddingRight": "5px",
+                                        "fontSize": "1.1vw"
                                     }
                                 ),
                                 dbc.Col(
@@ -206,8 +239,8 @@ class View:
                                     style={
                                         "borderBottom": "1px solid black", 
                                         "textAlign": "center", 
-                                        "padding": "2rem",
-                                        "fontSize": "1vw"
+                                        "padding": "1rem",
+                                        "fontSize": "2vw"
                                     }
                                 )
                             ],
@@ -220,10 +253,13 @@ class View:
                                     width=8, 
                                     style={
                                         "borderRight": "1px solid black", 
-                                        "textAlign": "center", 
-                                        "padding": "2rem",
-                                        "fontSize": ".9vw",
-                                        "borderBottom": "1px solid black" # Adding bottom border for consistent styling
+                                        "textAlign": "right", 
+                                        "display": "flex", 
+                                        "alignItems": "center", 
+                                        "justifyContent": "flex-end",
+                                        "paddingRight": "5px",
+                                        "fontSize": "1.2vw",
+                                        "borderBottom": "1px solid black"
                                     }
                                 ),
                                 dbc.Col(
@@ -233,8 +269,8 @@ class View:
                                     style={
                                         "borderBottom": "1px solid black", 
                                         "textAlign": "center", 
-                                        "padding": "2rem",
-                                        "fontSize": ".9vw"
+                                        "padding": "1rem",
+                                        "fontSize": "1.25vw"
                                     }
                                 )
                             ],
@@ -335,7 +371,7 @@ class View:
             Output('live-update-rotations', 'figure'),
             Output('sub-title', 'children'),
             Input('plot-interval-component', 'n_intervals'),
-        )(self.update_graphs)   
+        )(self.update_graphs)
 
         self._app.callback(
             Output('bsod-dialog', 'open', allow_duplicate=True),
@@ -343,16 +379,17 @@ class View:
             Output('notification-badge', 'children'),
             Input('message-interval-component', 'n_intervals'),
             prevent_initial_call=True
-        )(self.check_messages)  
+        )(self.check_messages)
 
         self._app.callback(
             Output('bsod-dialog', 'open', allow_duplicate=True),
             Output('bsod-content', 'children', allow_duplicate=True),
             Input('bsod-dismiss-button', 'n_clicks'),
             prevent_initial_call=True
-        )(self.close_bsod)  
+        )(self.close_bsod)
 
         self._app.callback(
+            Output('number-of-vols', 'children'),
             Output('movements-05mm', 'children'),
             Output('movements-1mm', 'children'),
             Output('max-abs-motion', 'children'),
@@ -383,15 +420,16 @@ class View:
 
     def update_metrics(self, n):
         df = self.todataframe()
+        num_vols = len(df)
         movements_05mm = (df[['x', 'y', 'z']].abs() > 0.5).any(axis=1).sum() + (df[['x', 'y', 'z']].abs() < -0.5).any(axis=1).sum()
         movements_1mm = (df[['x', 'y', 'z']].abs() > 1.0).any(axis=1).sum() + (df[['x', 'y', 'z']].abs() < -1.0).any(axis=1).sum()
-        
-        if not df.empty:
-            max_abs_motion = round(df[['x', 'y', 'z']].abs().max().max(), 3)
-        else:
-            max_abs_motion = 0  
 
-        return str(movements_05mm), str(movements_1mm), str(max_abs_motion)
+        if not df.empty:
+            max_abs_motion = round(df[['x', 'y', 'z']].abs().max().max(), 2)
+        else:
+            max_abs_motion = 0
+
+        return str(num_vols), str(movements_05mm), str(movements_1mm), str(max_abs_motion)
 
     def get_subtitle(self):
         return self._subtitle
