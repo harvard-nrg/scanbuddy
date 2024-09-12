@@ -156,7 +156,7 @@ class View:
                                 "marginBottom": "0px", 
                                 "textAlign": "center", 
                                 "padding": "1rem",
-                                "fontSize": "1.1vw"
+                                "fontSize": "1.5vw"
                             }
                         ),
                         dbc.Row(
