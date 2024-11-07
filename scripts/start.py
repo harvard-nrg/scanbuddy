@@ -10,6 +10,7 @@ from scanbuddy.watcher.directory import DirectoryWatcher
 from scanbuddy.proc import Processor
 from scanbuddy.proc.volreg import VolReg
 from scanbuddy.proc.params import Params
+from scanbuddy.proc.snr import SNR
 from scanbuddy.view.dash import View
 from scanbuddy.broker.redis import MessageBroker
 from scanbuddy.config import Config
@@ -25,6 +26,8 @@ def main():
     parser.add_argument('--port', type=int, default=8080)
     parser.add_argument('--folder', type=Path, required=True)
     parser.add_argument('-v', '--verbose', action='store_true')
+    parser.add_argument('--snr-interval', default=10, 
+        help='Every N volumes snr should be calculated')
     args = parser.parse_args()
 
     config = Config(args.config)
@@ -37,6 +40,7 @@ def main():
         config=config
     )
     volreg = VolReg(mock=args.mock)
+    snr = SNR()
     view = View(
         host=args.host,
         port=args.port,

@@ -17,7 +17,8 @@ requires = [
     'redis',
     'pyyaml',
     'jsonpath-ng',
-    'dash_auth'
+    'dash_auth',
+    'nibabel'
 ]
 
 about = dict()

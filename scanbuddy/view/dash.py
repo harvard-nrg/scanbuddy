@@ -34,6 +34,7 @@ class View:
         self._subtitle = 'Ready'
         self._num_warnings = 0
         self._instances = dict()
+        self._current_snr = 0.0
         self._redis_client = redis.StrictRedis(
             host=self._config.find_one('$.broker.host', default='127.0.0.1'),
             port=self._config.find_one('$.broker.port', default=6379),
@@ -43,6 +44,7 @@ class View:
         self.init_page()
         self.init_callbacks()
         pub.subscribe(self.listener, 'plot')
+        pub.subscribe(self.plot_snr, 'plot_snr')
 
     def init_app(self):
         self._app = Dash(
@@ -276,6 +278,36 @@ class View:
                             ],
                             style={"margin": "0px"}
                         ),
+                        dbc.Row(
+                            [
+                                dbc.Col(
+                                    "SNR", 
+                                    width=8, 
+                                    style={
+                                        "borderRight": "1px solid black", 
+                                        "textAlign": "center", 
+                                        "display": "flex", 
+                                        "alignItems": "center", 
+                                        "justifyContent": "flex-end",
+                                        "paddingRight": "5px",
+                                        "fontSize": "1.5vw",
+                                        "borderBottom": "1px solid black"
+                                    }
+                                ),
+                                dbc.Col(
+                                    id='snr', 
+                                    children="0", 
+                                    width=4, 
+                                    style={
+                                        "borderBottom": "1px solid black", 
+                                        "textAlign": "center", 
+                                        "padding": "1rem",
+                                        "fontSize": "1.25vw"
+                                    }
+                                )
+                            ],
+                            style={"margin": "0px"}
+                        ),
                     ],
                     style={"border": "1px solid black", "padding": "0"}
                 )
@@ -393,6 +425,7 @@ class View:
             Output('movements-05mm', 'children'),
             Output('movements-1mm', 'children'),
             Output('max-abs-motion', 'children'),
+            Output('snr', 'children'),
             Input('plot-interval-component', 'n_intervals'),
         )(self.update_metrics)
 
@@ -429,7 +462,15 @@ class View:
         else:
             max_abs_motion = 0
 
-        return str(num_vols), str(movements_05mm), str(movements_1mm), str(max_abs_motion)
+        snr = self.get_snr()
+
+        return str(num_vols), str(movements_05mm), str(movements_1mm), str(max_abs_motion), str(snr)
+
+    def get_snr(self):
+        if not self._current_snr:
+            return 0.0    
+        else:
+            return self._current_snr
 
     def get_subtitle(self):
         return self._subtitle
@@ -643,6 +684,7 @@ class View:
         arr = list()
         for i,instance in enumerate(self._instances.values(), start=1):
             volreg = instance['volreg']
+            #snr = instance.get('snr', '0.0')
             if volreg:
                 arr.append([i] + volreg)
         df = pd.DataFrame(arr, columns=['N', 'roll', 'pitch', 'yaw', 'x', 'y', 'z'])
@@ -658,6 +700,9 @@ class View:
     def listener(self, instances, subtitle_string):
         self._instances = instances
         self._subtitle = subtitle_string
+
+    def plot_snr(self, snr_metric):
+        self._current_snr = snr_metric
 
 class AuthError(Exception):
     pass
