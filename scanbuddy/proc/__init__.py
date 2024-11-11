@@ -4,6 +4,7 @@ import time
 import math
 import json
 import logging
+import threading
 import numpy as np
 from pubsub import pub
 from sortedcontainers import SortedDict
@@ -36,6 +37,8 @@ class Processor:
         logger.debug('current state of instances')
         logger.debug(json.dumps(self._instances, default=list, indent=2))
 
+        num_vols = ds[(0x0020, 0x0105)].value
+
         tasks = self.check_volreg(key)
         ### edits need to be made here
         snr_tasks = self.check_snr(key)
@@ -51,24 +54,33 @@ class Processor:
 
         logger.debug(json.dumps(self._instances, indent=2))
 
-        if key == 5:
-            self._fdata_array = self._slice_means[key]['slice_means']
-            #self._slice_means_array = self._slice_means[key]['slice_means']
-            #self._mask_array = self._slice_means[key]['mask']
-        elif key > 5:
-            self._fdata_array = np.concatenate((self._fdata_array, self._slice_means[key]['slice_means']), axis=3)
-            #self._slice_means_array = np.column_stack((self._slice_means_array, self._slice_means[key]['slice_means']))
-            #self._mask_array = np.column_stack((self._mask_array, self._slice_means[key]['mask']))
-        #if len(self._instances) % self._snr_interval == 0:
-        if key == 10:
-            snr_metric = self.calc_snr()
+        if key == 1:
+            x, y, z, _ = self._slice_means[key]['slice_means'].shape
+
+            #self._fdata_array = np.zeros((x, y, z, num_vols))
+            self._fdata_array = np.empty((x, y, z, num_vols))
+
+            logger.info(f'shape of zeros: {self._fdata_array.shape}')
+            logger.info(f'shape of first slice means: {self._slice_means[key]['slice_means'].shape}')
+            time.sleep(10)
+
+        if key >= 5:
+            insert_position = key - 5
+            #self._fdata_array[:, :, :, insert_position] = self._slice_means[key]['slice_means']
+            self._fdata_array[:, :, :, insert_position] = self._slice_means[key]['slice_means'].squeeze()
+
+        #elif key > 5:
+            #self._fdata_array = np.concatenate((self._fdata_array, self._slice_means[key]['slice_means']), axis=3)
         if key > 53:
             #logger.info(f'shape of slice_means_array: {self._slice_means_array.shape}')
             logger.info(f'shape of fdata_array: {self._fdata_array.shape}')
             logger.info('publishing message to plot_snr topic')
-            snr_metric = round(self.calc_snr(), 2)
-            logger.info(f'running snr metric: {snr_metric}')
-            pub.sendMessage('plot_snr', snr_metric=snr_metric)    
+
+            snr_thread = threading.Thread(target=self.calculate_and_publish_snr)
+            snr_thread.start()
+            #snr_metric = round(self.calc_snr(), 2)
+            #logger.info(f'running snr metric: {snr_metric}')
+            #pub.sendMessage('plot_snr', snr_metric=snr_metric)    
             
         logger.debug(f'after volreg')
         logger.debug(json.dumps(self._instances, indent=2))
@@ -78,6 +90,11 @@ class Processor:
         scannum = ds.get('SeriesNumber', '[NUMBER]')
         subtitle_string = f'{project} • {session} • {scandesc} • {scannum}'
         pub.sendMessage('plot', instances=self._instances, subtitle_string=subtitle_string)
+
+    def calculate_and_publish_snr(self):
+        snr_metric = round(self.calc_snr(), 2)
+        logger.info(f'running snr metric: {snr_metric}')
+        pub.sendMessage('plot_snr', snr_metric=snr_metric) 
 
     def check_volreg(self, key):
         tasks = list()
@@ -134,6 +151,7 @@ class Processor:
 
             total_voxel_count += slice_voxel_count
 
+        #return slice_weighted_mean_mean / total_voxel_count
         return slice_weighted_snr_mean / total_voxel_count
 
 
@@ -160,9 +178,7 @@ class Processor:
 
     def generate_mask(self):
 
-        mean_data = np.mean(self._fdata_array,axis=3)
-
-        pdb.set_trace()
+        mean_data = np.mean(self._fdata_array, axis=3)
 
         numpy_3d_mask = np.zeros(mean_data.shape, dtype=bool)
 
