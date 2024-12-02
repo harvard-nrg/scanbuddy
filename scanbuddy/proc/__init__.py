@@ -45,7 +45,6 @@ class Processor:
 
 
         tasks = self.check_volreg(key)
-        ### edits need to be made here
         snr_tasks = self.check_snr(key)
         logger.debug('publishing message to volreg topic with the following tasks')
         logger.debug(json.dumps(tasks, indent=2))
@@ -75,7 +74,6 @@ class Processor:
             x, y, self._z, _ = self._slice_means[key]['slice_means'].shape
 
             self._fdata_array = np.empty((x, y, self._z, self._num_vols))
-            #self._slice_intensity_means = np.zeros( (self._z, math.ceil(self._num_vols // 2)) )
             self._slice_intensity_means = np.zeros( (self._z, self._num_vols) )
 
 
@@ -87,21 +85,11 @@ class Processor:
             insert_position = key - 5
             self._fdata_array[:, :, :, insert_position] = self._slice_means[key]['slice_means'].squeeze()
 
-        #if key == 54:
-        #    logger.info('launching calculate and publish snr thread')
-
-        #    snr_thread = threading.Thread(target=self.calculate_and_publish_snr, args=(key,))
-        #    snr_thread.start()
-
-
         if key > 53 and (key % 3 == 0) and key < self._num_vols:
             logger.info('launching calculate and publish snr thread')
 
             snr_thread = threading.Thread(target=self.calculate_and_publish_snr, args=(key,))
             snr_thread.start()
-            #snr_metric = round(self.calc_snr(key), 2)
-            #logger.info(f'running snr metric: {snr_metric}')
-            #pub.sendMessage('plot_snr', snr_metric=snr_metric)
 
         if key == self._num_vols:
             time.sleep(2)
@@ -128,7 +116,6 @@ class Processor:
             logger.info(f'snr is a nan, decrementing mask threshold by {self._decrement}')
             self._mask_threshold = self._mask_threshold - self._decrement
             logger.info(f'new threshold: {self._mask_threshold}')
-            #self._numpy_4d_mask = np.zeros(self._fdata_array.shape, dtype=bool)
             self._slice_intensity_means = np.zeros( (self._z, self._num_vols) )
         else:
             pub.sendMessage('plot_snr', snr_metric=snr_metric) 
@@ -137,10 +124,8 @@ class Processor:
         tasks = list()
         current = self._instances[key]
 
-        # get numerical index of key O(log n)
         i = self._instances.bisect_left(key)
 
-        # always register current node to left node
         try:
             left_index = max(0, i - 1)
             left = self._instances.values()[left_index]
@@ -149,7 +134,6 @@ class Processor:
         except IndexError:
             pass
 
-        # if there is a right node, re-register to current node
         try:
             right_index = i + 1
             right = self._instances.values()[right_index]
@@ -212,14 +196,11 @@ class Processor:
             logger.info(f'finding mask differences took {time.time() - start}')
 
 
-        #slice_intensity_means = np.zeros( (dim_z,dim_t) )
         slice_voxel_counts = np.zeros( (dim_z), dtype='uint32' )
         slice_size = dim_x * dim_y
 
         for slice_idx in range(dim_z):
             slice_voxel_counts[slice_idx] = slice_size - mask[:,:,slice_idx,0].sum()
-
-        #pdb.set_trace()
 
         zero_columns = np.where(np.all(self._slice_intensity_means[:,:dim_t] == 0, axis=0))[0].tolist()
 
@@ -265,13 +246,7 @@ class Processor:
                             slice_data = data[:,:,slice_idx,volume_idx]
                             slice_vol_mean = slice_data.mean()
                             self._slice_intensity_means[slice_idx,volume_idx] = slice_vol_mean  
-                '''
-                for volume_idx in range(dim_t):
-                    for slice_idx in differing_slices:
-                        slice_data = data[:,:,slice_idx,volume_idx]
-                        slice_vol_mean = slice_data.mean()
-                        self._slice_intensity_means[slice_idx,volume_idx] = slice_vol_mean
-                '''
+
 
         return self._slice_intensity_means[:, :dim_t], slice_voxel_counts, data
 
