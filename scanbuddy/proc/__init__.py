@@ -85,7 +85,7 @@ class Processor:
             insert_position = key - 5
             self._fdata_array[:, :, :, insert_position] = self._slice_means[key]['slice_means'].squeeze()
 
-        if key > 53 and (key % 3 == 0) and key < self._num_vols:
+        if key > 53 and (key % 4 == 0) and key < self._num_vols:
             logger.info('launching calculate and publish snr thread')
 
             snr_thread = threading.Thread(target=self.calculate_and_publish_snr, args=(key,))
@@ -190,10 +190,12 @@ class Processor:
 
         dim_t = key - 4
 
+        '''
         if key > 55:
             start = time.time()
             differing_slices = self.find_mask_differences(key)
             logger.info(f'finding mask differences took {time.time() - start}')
+        '''
 
 
         slice_voxel_counts = np.zeros( (dim_z), dtype='uint32' )
@@ -221,31 +223,48 @@ class Processor:
                     slice_vol_mean = slice_data.mean()
                     self._slice_intensity_means[slice_idx,volume_idx] = slice_vol_mean
 
-            logger.info(f'recalculating slice means at the following slices: {differing_slices}')
-            logger.info(f'total of {len(differing_slices)} new slices being computed')
+            #logger.info(f'recalculating slice means at the following slices: {differing_slices}')
+            #logger.info(f'total of {len(differing_slices)} new slices being computed')
 
-            if differing_slices:
+            #if differing_slices:
 
-                if key == self._num_vols:
-                    for volume_idx in range(dim_t):
-                        for slice_idx in differing_slices:
-                            slice_data = data[:,:,slice_idx,volume_idx]
-                            slice_vol_mean = slice_data.mean()
-                            self._slice_intensity_means[slice_idx,volume_idx] = slice_vol_mean
+            if key == self._num_vols:
+                start = time.time()
+                differing_slices = self.find_mask_differences(key)
+                logger.info(f'finding mask differences took {time.time() - start}')
+                logger.info(f'recalculating slice means at the following slices: {differing_slices}')
+                logger.info(f'total of {len(differing_slices)} new slices being computed')
+                for volume_idx in range(dim_t):
+                    for slice_idx in differing_slices:
+                        slice_data = data[:,:,slice_idx,volume_idx]
+                        slice_vol_mean = slice_data.mean()
+                        self._slice_intensity_means[slice_idx,volume_idx] = slice_vol_mean
 
-                elif key % 4 == 0:
-                    for volume_idx in range(0, dim_t, 6):
-                        for slice_idx in differing_slices:
-                            slice_data = data[:,:,slice_idx,volume_idx]
-                            slice_vol_mean = slice_data.mean()
-                            self._slice_intensity_means[slice_idx,volume_idx] = slice_vol_mean
+            elif key % 6 == 0:
+                logger.info(f'inside the even calculation')
+                start = time.time()
+                differing_slices = self.find_mask_differences(key)
+                logger.info(f'finding mask differences took {time.time() - start}')
+                logger.info(f'recalculating slice means at the following slices: {differing_slices}')
+                logger.info(f'total of {len(differing_slices)} new slices being computed')
+                for volume_idx in range(0, dim_t, 8):
+                    for slice_idx in differing_slices:
+                        slice_data = data[:,:,slice_idx,volume_idx]
+                        slice_vol_mean = slice_data.mean()
+                        self._slice_intensity_means[slice_idx,volume_idx] = slice_vol_mean
 
-                elif key % 3 == 0:
-                    for volume_idx in range(3, dim_t, 6):
-                        for slice_idx in differing_slices:
-                            slice_data = data[:,:,slice_idx,volume_idx]
-                            slice_vol_mean = slice_data.mean()
-                            self._slice_intensity_means[slice_idx,volume_idx] = slice_vol_mean  
+            elif key % 5 == 0:
+                logger.info(f'inside the odd calculation')
+                start = time.time()
+                differing_slices = self.find_mask_differences(key)
+                logger.info(f'finding mask differences took {time.time() - start}')
+                logger.info(f'recalculating slice means at the following slices: {differing_slices}')
+                logger.info(f'total of {len(differing_slices)} new slices being computed')
+                for volume_idx in range(5, dim_t, 8):
+                    for slice_idx in differing_slices:
+                        slice_data = data[:,:,slice_idx,volume_idx]
+                        slice_vol_mean = slice_data.mean()
+                        self._slice_intensity_means[slice_idx,volume_idx] = slice_vol_mean
 
 
         return self._slice_intensity_means[:, :dim_t], slice_voxel_counts, data
@@ -276,17 +295,16 @@ class Processor:
         return masked_data
 
     def find_mask_differences(self, key):
-        num_old_vols = key - 7
-        prev_mask = self._slice_means[key-3]['mask']
+        num_old_vols = key - 8
+        last_50 = num_old_vols - 50
+        prev_mask = self._slice_means[key-4]['mask']
         current_mask = self._slice_means[key]['mask']
-        differences = prev_mask != current_mask[:,:,:,:num_old_vols]
+        differences = prev_mask[:,:,:,-50:] != current_mask[:,:,:,last_50:num_old_vols]
         diff_indices = np.where(differences)
         differing_slices = []
         for index in zip(*diff_indices):
             if int(index[2]) not in differing_slices:
                 differing_slices.append(int(index[2]))
-        #slices_to_update = differing_slices.sort()
-        #pdb.set_trace()
         return differing_slices
 
 
