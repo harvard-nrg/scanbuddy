@@ -10,7 +10,6 @@ import logging
 import pydicom
 import subprocess
 import numpy as np
-#import nilearn.image
 import nibabel as nib
 from pubsub import pub
 import collections as c
