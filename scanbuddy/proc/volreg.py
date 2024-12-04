@@ -1,19 +1,22 @@
 import os
 import glob
 import json
+import time
 import logging
 import random
 import pydicom
 import subprocess
 import numpy as np
 from pubsub import pub
-import time
+from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
 class VolReg:
     def __init__(self, mock=False):
         self._mock = mock
+        self._dcm1_instance_num = None
+        self._dcm2_instance_num = None
         pub.subscribe(self.listener, 'volreg')
 
     def listener(self, tasks):
@@ -48,9 +51,9 @@ class VolReg:
 
             arr = self.run_volreg(nii1, nii2, self.out_dir)
 
-            self.clean_dir(nii1, nii2, self.out_dir)
+            #self.clean_dir(nii1, nii2, self.out_dir)
 
-            logger.info(f'volreg array from registering volume {int(pydicom.dcmread(dcm2, force=True, stop_before_pixels=True).InstanceNumber)} to volume {int(pydicom.dcmread(dcm1, force=True, stop_before_pixels=True).InstanceNumber)}: {arr}')
+            logger.info(f'volreg array from registering volume {self._dcm2_instance_num} to volume {self._dcm1_instance_num}: {arr}')
 
             self.insert_array(arr, task_idx)
 
@@ -63,11 +66,20 @@ class VolReg:
         self.num_tasks = len(self.tasks)
 
     def create_niis(self, task_idx):
+        
         dcm1 = self.tasks[task_idx][1]['path']
         nii1 = self.run_dcm2niix(dcm1, 1)
+        self._dcm1_instance_num = int(pydicom.dcmread(dcm1, force=True, stop_before_pixels=True).InstanceNumber)
+        nii1 = self.run_dcm2niix(dcm1, self._dcm1_instance_num)
+        if self.tasks[task_idx][1]['nii_path'] is None:
+            self.tasks[task_idx][1]['nii_path'] = nii1
 
         dcm2 = self.tasks[task_idx][0]['path']
         nii2 = self.run_dcm2niix(dcm2, 2)
+        self._dcm2_instance_num = int(pydicom.dcmread(dcm2, force=True, stop_before_pixels=True).InstanceNumber)
+        nii2 = self.run_dcm2niix(dcm2, self._dcm2_instance_num)
+        if self.tasks[task_idx][0]['nii_path'] is None:
+            self.tasks[task_idx][0]['nii_path'] = nii2
 
         return nii1, nii2, dcm1, dcm2
 
