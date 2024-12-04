@@ -146,6 +146,7 @@ class View:
             }
         )   
 
+        '''
         metrics_card = dbc.Card(
             [
                 dbc.CardBody(
@@ -310,6 +311,7 @@ class View:
                         ),
                     ],
                     style={"border": "1px solid black", "padding": "0"}
+                ''
                 )
             ],
             style={
@@ -321,11 +323,82 @@ class View:
             }
         )
 
+        '''
+        LEFT_COLUMN_WIDTH = "85%"
+        RIGHT_COLUMN_WIDTH = "85%"
+        BG_COLOR = "#e0f7fa"  # Light blue background
+        PADDING = "10px"
+        BORDER_STYLE = "1px solid black"
+        table_header = [
+            html.Thead(
+                html.Tr(
+                    html.Th(
+                        "Motion Metrics",
+                        colSpan=2,
+                        style={
+                            'textAlign': 'center',
+                            'border': BORDER_STYLE
+                        }
+                    )
+                )
+            )
+        ]
+        # Metric table rows with ids for each value
+        row1 = html.Tr([
+            html.Td("Number of Volumes", style={'width': LEFT_COLUMN_WIDTH, 'padding': PADDING, 'border': BORDER_STYLE}),
+            html.Td(id='number-of-vols', children="0", style={'width': RIGHT_COLUMN_WIDTH, 'padding': PADDING, 'border': BORDER_STYLE})
+        ])      
+
+        row2 = html.Tr([
+            html.Td("Movements > .5 mm", style={'width': LEFT_COLUMN_WIDTH, 'padding': PADDING, 'border': BORDER_STYLE}),
+            html.Td(id='movements-05mm', children="0", style={'width': RIGHT_COLUMN_WIDTH, 'padding': PADDING, 'border': BORDER_STYLE})
+        ])      
+
+        row3 = html.Tr([
+            html.Td("Movements > 1 mm", style={'width': LEFT_COLUMN_WIDTH, 'padding': PADDING, 'border': BORDER_STYLE}),
+            html.Td(id='movements-1mm', children="0", style={'width': RIGHT_COLUMN_WIDTH, 'padding': PADDING, 'border': BORDER_STYLE})
+        ])      
+
+        row4 = html.Tr([
+            html.Td("Max Abs Motion", style={'width': LEFT_COLUMN_WIDTH, 'padding': PADDING, 'border': BORDER_STYLE}),
+            html.Td(id='max-abs-motion', children="0", style={'width': RIGHT_COLUMN_WIDTH, 'padding': PADDING, 'border': BORDER_STYLE})
+        ])      
+
+        row5 = html.Tr([
+            html.Td("SNR", style={'width': LEFT_COLUMN_WIDTH, 'padding': PADDING, 'border': BORDER_STYLE}),
+            html.Td(id='snr', children="0.0", style={'width': RIGHT_COLUMN_WIDTH, 'padding': PADDING, 'border': BORDER_STYLE, 'textAlign': 'center'})
+        ])      
+
+        table_body = [
+            html.Tbody([
+                row1,
+                row2,
+                row3,
+                row4,
+                row5
+            ])
+        ]       
+
+        metrics_table = dbc.Table(
+            table_header + table_body,
+            bordered=True,
+            striped=True,
+            style={
+                'fontSize': '3.0vh',
+                'backgroundColor': BG_COLOR
+            }
+        )
+
         self._app.layout = html.Div([
             navbar,
             dbc.Row(
                 [
-                    dbc.Col(metrics_card, width=2, style={"marginTop": "50px"}),
+                    dbc.Col(
+                        metrics_table,
+                        style={
+                            'margin': '10px'
+                        }
+                    ),
                     dbc.Col(
                         [
                             displacements_graph,
