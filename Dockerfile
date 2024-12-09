@@ -2,7 +2,6 @@ FROM rockylinux:8
 
 # install some base necessities
 RUN dnf install -y git vim
-RUN dnf install -y epel-release
 
 # create a home directory
 RUN mkdir -p /home/scanbuddy
@@ -43,12 +42,18 @@ RUN cmake .. && \
     rm -r "/tmp/dcm2niix-${D2N_VERSION}"
 ENV PATH="${D2N_PREFIX}:${PATH}"
 
-# install scanbuddy
-ARG SB_PREFIX="/sw/apps/scanbuddy"
-RUN dnf install -y conda
-RUN conda create -y -n python3.13t --override-channels -c conda-forge python-freethreading
-RUN conda env config vars set PYTHON_GIL=0 -n python3.13t
-ARG SB_VERSION="v0.1.11"
-RUN conda run -n python3.13t --live-stream python3 -m pip install "git+https://github.com/harvard-nrg/scanbuddy.git@${SB_VERSION}"
+# install miniforge
+ARG MFG_PREFIX="/sw/miniforge"
+WORKDIR "/tmp"
+RUN curl -sL "https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-$(uname)-$(uname -m).sh" -o "miniforge.sh"
+RUN bash "miniforge.sh" -b -p "${MFG_PREFIX}"
+RUN rm "miniforge.sh"
+ENV PATH="${MFG_PREFIX}/bin:${PATH}"
 
-ENTRYPOINT ["conda", "run", "-n", "python3.13t", "--live-stream", "start.py"]
+# install scanbuddy
+RUN mamba create -y -n python3.13t --override-channels -c conda-forge python-freethreading
+RUN mamba env config vars set PYTHON_GIL=0 -n python3.13t
+ARG SB_VERSION="main"
+RUN mamba run -n python3.13t --no-capture-output python3 -m pip install "git+https://github.com/harvard-nrg/scanbuddy.git@${SB_VERSION}"
+
+ENTRYPOINT ["mamba", "run", "-n", "python3.13t", "--no-capture-output", "start.py"]
