@@ -18,7 +18,8 @@ requires = [
     'pyyaml',
     'jsonpath-ng',
     'dash_auth',
-    'nibabel'
+    'nibabel',
+    'tabulate'
 ]
 
 about = dict()
