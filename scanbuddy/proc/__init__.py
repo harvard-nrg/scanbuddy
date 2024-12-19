@@ -73,8 +73,8 @@ class Processor:
             self._mask_threshold, self._decrement = self.get_mask_threshold(ds)
             x, y, self._z, _ = self._slice_means[key]['slice_means'].shape
 
-            self._fdata_array = np.empty((x, y, self._z, self._num_vols))
-            self._slice_intensity_means = np.zeros( (self._z, self._num_vols) )
+            self._fdata_array = np.zeros((x, y, self._z, self._num_vols), dtype=np.float64)
+            self._slice_intensity_means = np.zeros((self._z, self._num_vols), dtype=np.float64)
 
 
 
