@@ -15,7 +15,7 @@ def main():
     parser = ArgumentParser()
     parser.add_argument('--copy-to', type=Path, required=True)
     parser.add_argument('--stop-after', type=int) 
-    parser.add_argument('--delay', type=int, default=0)
+    parser.add_argument('--delay', type=float, default=0)
     parser.add_argument('input')
     args = parser.parse_args()
 
