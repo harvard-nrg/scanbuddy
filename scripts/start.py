@@ -43,7 +43,6 @@ def main():
         config=config
     )
     volreg = VolReg(mock=args.mock)
-    snr = SNR()
     view = View(
         host=args.host,
         port=args.port,

@@ -22,6 +22,13 @@ class SNR:
         pub.subscribe(self.listener, 'snr')
 
 
+    def do(self, nii_path, tasks):
+        logger.info('received tasks for fdata extraction')
+        self.snr_tasks = tasks
+        self._nii_path = nii_path
+
+        self.run()
+
     def listener(self, nii_path, tasks):
         logger.info('received tasks for fdata extraction')
         self.snr_tasks = tasks
@@ -39,7 +46,6 @@ class SNR:
         instance_num = int(dcm.InstanceNumber)
 
         logger.info(f'extracting fdata for volume {instance_num}')
-
         data_array = self.get_nii_array()
 
         self.insert_snr(data_array, self.snr_tasks[0], None)
@@ -49,7 +55,6 @@ class SNR:
         elapsed = time.time() - start
 
         logger.info(f'extracting fdata from volume {instance_num} took {elapsed} seconds')
-
 
     def get_nii_array(self):
         return nib.load(self._nii_path).get_fdata()
