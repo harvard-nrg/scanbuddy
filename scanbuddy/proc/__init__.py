@@ -111,7 +111,7 @@ class Processor:
 
 
             logger.info(f'shape of zeros: {self._fdata_array.shape}')
-            logger.info(f'shape of first slice means: {self._slice_means[key]['slice_means'].shape}')
+            logger.info(f"shape of first slice means: {self._slice_means[key]['slice_means'].shape}")
         
         if key >= 5:
             insert_position = key - 5
