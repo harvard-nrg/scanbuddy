@@ -1,5 +1,4 @@
 import os
-import gc
 import sys
 import pdb
 import time
@@ -310,12 +309,13 @@ class Processor:
         mask = np.ma.getmask(masked_data)
 
         self._slice_means[key]['mask'] = mask
-
+        '''
         size_mask = self.get_size_mask() / (1024**2)
         logger.info(f'===============================')
         logger.info(f'SHAPE OF MASK IS {mask.shape}')
         logger.info(f'SIZE OF MASK IS {size_mask} MB')
         logger.info(f'===============================')
+        '''
         
         return masked_data
 
