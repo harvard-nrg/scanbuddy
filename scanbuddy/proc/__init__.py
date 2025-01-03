@@ -83,7 +83,7 @@ class Processor:
         pub.sendMessage('plot', instances=self._instances, subtitle_string=subtitle_string)
 
         snr_tasks = self.check_snr(key)
-        logger.info(f'snr task sorted dict: {snr_tasks}')
+        #logger.info(f'snr task sorted dict: {snr_tasks}')
 
         snr = SNR()
         nii_path = self._instances[key]['nii_path']
@@ -172,12 +172,14 @@ class Processor:
 
     def calc_snr(self, key):
         slice_intensity_means, slice_voxel_counts, data = self.get_mean_slice_intensities(key)
+        '''
         size_slice_int_means = self.getsize(slice_intensity_means) / (1024**3)
         size_data = self.getsize(data) / (1024**2)
         logger.info('==============================================')
         logger.info(f' SIZE OF slice_intensity_means IS {size_slice_int_means} MB')
         logger.info(f' SIZE OF data IS {size_data} MB')
         logger.info('==============================================')
+        '''
 
         non_zero_columns = ~np.all(slice_intensity_means == 0, axis=0)
 
