@@ -68,14 +68,14 @@ class VolReg:
     def create_niis(self, task_idx):
         
         dcm1 = self.tasks[task_idx][1]['path']
-        nii1 = self.run_dcm2niix(dcm1, 1)
+        #nii1 = self.run_dcm2niix(dcm1, 1)
         self._dcm1_instance_num = int(pydicom.dcmread(dcm1, force=True, stop_before_pixels=True).InstanceNumber)
         nii1 = self.run_dcm2niix(dcm1, self._dcm1_instance_num)
         if self.tasks[task_idx][1]['nii_path'] is None:
             self.tasks[task_idx][1]['nii_path'] = nii1
 
         dcm2 = self.tasks[task_idx][0]['path']
-        nii2 = self.run_dcm2niix(dcm2, 2)
+        #nii2 = self.run_dcm2niix(dcm2, 2)
         self._dcm2_instance_num = int(pydicom.dcmread(dcm2, force=True, stop_before_pixels=True).InstanceNumber)
         nii2 = self.run_dcm2niix(dcm2, self._dcm2_instance_num)
         if self.tasks[task_idx][0]['nii_path'] is None:
@@ -100,6 +100,8 @@ class VolReg:
            '-o', self.out_dir,
            dicom
         ]
+        cmdstr = json.dumps(dcm2niix_cmd, indent=2)
+        #logger.info(f'running {cmdstr}')
 
         output = subprocess.check_output(dcm2niix_cmd, stderr=subprocess.STDOUT)
 
