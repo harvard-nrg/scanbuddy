@@ -360,7 +360,7 @@ class View:
         ])      
 
         row4 = html.Tr([
-            html.Td("Max Abs Motion", style={'width': LEFT_COLUMN_WIDTH, 'padding': PADDING, 'border': BORDER_STYLE}),
+            html.Td("Max Vol-Vol Motion", style={'width': LEFT_COLUMN_WIDTH, 'padding': PADDING, 'border': BORDER_STYLE}),
             html.Td(id='max-abs-motion', children="0", style={'width': RIGHT_COLUMN_WIDTH, 'padding': PADDING, 'border': BORDER_STYLE})
         ])      
 
