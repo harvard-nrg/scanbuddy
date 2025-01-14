@@ -81,11 +81,47 @@ Configuring the Plugin
 ^^^^^^^^^^^^^^^^^^^^^^
 We have to tell the scanner which scans should be exported to the Scanbuddy machine and where the scanbuddy machine is.
 
-Building the Container
-^^^^^^^^^^^^^^^^^^^^^^
-Scanbuddy is packaged up in a Docker container to abstract away the hassle of installing the specific software it needs. Hurray for Docker!
+Building the Container Image
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Scanbuddy is packaged up in a Docker container to abstract away the hassle of installing the specific software it needs. Hurray for Docker! We've built and pushed the Docker image to Github Container Repository so you can run ``docker pull`` to build it on your local (Scanbuddy) machine. Take a look at this page to pull the latest version: `Scanbuddy image <https://github.com/harvard-nrg/scanbuddy/pkgs/container/scanbuddy>`_.
+
+.. note::
+     Make sure you verify the CPU architecture of the machine you're using and build the correct version of the container! The ``uname -m`` command will tell you what you've got.
+
+Verify the container has been built by running
+
+.. code-block:: shell
+     docker image ls
+
+You should see the Scanbuddy image listed there (check that it's the correct version).
+
+Redis Container
+"""""""""""""""
+One feature of Scanbuddy is checking that the head coil is plugged in correctly and communicating correctly with the Scanner PC. We use Redis as a lightweight database to keep track of the head coil status. Run this command to build and run the redis container:
+
+.. code-block:: shell
+     docker run -d --name redis -p 8001:8001 redis/redis-stack:latest
 
 Running Scanbuddy
 ^^^^^^^^^^^^^^^^^
 With the plugin and Samba configured and the container built, we're ready to run Scanbuddy! 
+
+The first thing to do is set a few environment variables inside of your shell for Scanbuddy: ``SCANBUDDY_SESSION_ID`` and ``SCANBUDDY_SESSION_KEY``
+
+You can make this whatever you want (I would recommend a string) inside of your ``~/.bashrc`` file:
+
+.. code-block:: shell
+
+     SCANBUDDY_SESSION_ID='best_session_ever'
+     SCANBUDDY_SESSION_KEY='1234'
+
+.. note::
+     Remember to reload your shell environment!
+
+Scanbuddy Command and Argument
+""""""""""""""""""""""""""""""
+
+
+
+
 
