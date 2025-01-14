@@ -6,7 +6,7 @@ test:
 dist:
 	python3 setup.py sdist bdist_wheel --universal
 	pip uninstall scanbuddy
-	pip install dist/scanbuddy-0.1.5-py2.py3-none-any.whl
+	pip install dist/scanbuddy-0.1.12-py2.py3-none-any.whl
 	rm -rf build dist .egg scanbuddy.egg-info
 publish:
 	pip install 'twine>=1.5.0'
