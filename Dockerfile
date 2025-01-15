@@ -1,7 +1,7 @@
-FROM rockylinux:8
+FROM fedora:41
 
 # install some base necessities
-RUN dnf install -y git vim
+RUN dnf install -y git vim dcm2niix
 
 # create a home directory
 RUN mkdir -p /home/scanbuddy
@@ -11,8 +11,7 @@ ENV HOME=/home/scanbuddy
 ARG AFNI_PREFIX="/sw/apps/afni"
 ARG AFNI_URI="https://github.com/afni/afni"
 WORKDIR /tmp
-RUN dnf install -y epel-release && \
-    dnf install -y --allowerasing curl tcsh libpng15 motif && \
+RUN dnf install -y --allowerasing curl tcsh libpng15 motif && \
     dnf install -y make clang zlib-devel libXt-devel libXext-devel expat-devel motif-devel f2c && \
     git clone "${AFNI_URI}"
 WORKDIR afni/src
@@ -22,25 +21,6 @@ RUN cp other_builds/Makefile.linux_ubuntu_22_64 Makefile && \
     mv 3dvolreg "${AFNI_PREFIX}" && \
     rm -r /tmp/afni
 ENV PATH="${AFNI_PREFIX}:${PATH}"
-
-# compile and install dcm2niix (linux/amd64 and linux/arm64/v8)
-ARG D2N_PREFIX="/sw/apps/dcm2niix"
-ARG D2N_VERSION="1.0.20220720"
-ARG D2N_URI="https://github.com/rordenlab/dcm2niix/archive/refs/tags/v${D2N_VERSION}.zip"
-WORKDIR "/tmp"
-RUN dnf install -y unzip cmake gcc-c++ && \
-    dnf --enablerepo=powertools install -y libstdc++-static && \
-    curl -sL "${D2N_URI}" -o "dcm2niix_src.zip" && \
-    unzip "dcm2niix_src.zip" && \
-    rm "dcm2niix_src.zip" && \
-    mkdir "dcm2niix-${D2N_VERSION}/build"
-WORKDIR "/tmp/dcm2niix-${D2N_VERSION}/build"
-RUN cmake .. && \
-    make && \
-    mkdir -p "${D2N_PREFIX}" && \
-    cp bin/dcm2niix "${D2N_PREFIX}" && \
-    rm -r "/tmp/dcm2niix-${D2N_VERSION}"
-ENV PATH="${D2N_PREFIX}:${PATH}"
 
 # install miniforge
 ARG MFG_PREFIX="/sw/miniforge"
