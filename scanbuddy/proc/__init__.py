@@ -102,6 +102,7 @@ class Processor:
         logger.debug(json.dumps(self._instances, indent=2))
         
         if key < 5:
+            logger.info(f'Scan info: Project {project} • Session: {session} • Series: {scandesc} • Scan Number: {scannum} • Date & Time: {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}')
             self._num_vols = ds[(0x0020, 0x0105)].value
             self._mask_threshold, self._decrement = self.get_mask_threshold(ds)
             x, y, self._z, _ = self._slice_means[key]['slice_means'].shape
