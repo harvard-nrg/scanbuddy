@@ -338,7 +338,8 @@ class Processor:
         logger.info(f'looking for mask differences between {key} and {key - 4}')
         prev_mask = self._slice_means[key - 4]['mask']
         current_mask = self._slice_means[key]['mask']
-        differences = prev_mask[:,:,:,-50:] != current_mask[:,:,:,last_50:num_old_vols]
+        differences = prev_mask != current_mask[:,:,:,:num_old_vols]
+        #differences = prev_mask[:,:,:,-50:] != current_mask[:,:,:,last_50:num_old_vols]
         diff_indices = np.where(differences)
         differing_slices = []
         for index in zip(*diff_indices):
