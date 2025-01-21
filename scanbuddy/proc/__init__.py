@@ -5,6 +5,7 @@ import time
 import math
 import json
 import shutil
+import psutil
 import logging
 import datetime
 import threading
@@ -102,7 +103,7 @@ class Processor:
         logger.debug(json.dumps(self._instances, indent=2))
         
         if key < 5:
-            logger.info(f'Scan info: Project {project} • Session: {session} • Series: {scandesc} • Scan Number: {scannum} • Date & Time: {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}')
+            logger.info(f'Scan info: Project: {project}, Session: {session}, Series: {scandesc}, Scan Number: {scannum}, Date & Time: {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}')
             self._num_vols = ds[(0x0020, 0x0105)].value
             self._mask_threshold, self._decrement = self.get_mask_threshold(ds)
             x, y, self._z, _ = self._slice_means[key]['slice_means'].shape
@@ -122,6 +123,7 @@ class Processor:
         
         if key > 53 and (key % 4 == 0) and key < self._num_vols:
             logger.info('launching calculate and publish snr thread')
+            logger.info(f'Current RAM usage: {round(psutil.virtual_memory().used / (1024 ** 3), 3)}')
 
             snr_thread = threading.Thread(target=self.calculate_and_publish_snr, args=(key,))
             snr_thread.start()
