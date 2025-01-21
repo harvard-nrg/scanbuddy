@@ -34,6 +34,8 @@ class DicomWatcher:
         logger.info(f'stopping dicom watcher on {self._directory}')
         self._observer.stop()
         logger.info(f'removing {self._directory}')
+        logger.info(f'dangling files: {os.listdir(self._directory)}')
+        logger.info(f'removing {len(os.listdir()) - 1} dangling files (sub-directory not counted)')
         try:
             shutil.rmtree(self._directory)
             pub.sendMessage('reset')
