@@ -64,7 +64,7 @@ class DicomHandler(PatternMatchingEventHandler):
             logger.exception(e, exc_info=True)
 
 
-    @retry((IOError, InvalidDicomError), delay=.01, backoff=1.5, max_delay=1.5, tries=10)
+    @retry((IOError, InvalidDicomError), delay=.01, backoff=1.5, max_delay=1.5, tries=15)
     def read_dicom(self, dicom):
         """
         Checking the file size is necessary when mounted over a samba share.

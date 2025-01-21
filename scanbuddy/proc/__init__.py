@@ -119,11 +119,19 @@ class Processor:
             insert_position = key - 5
             self._fdata_array[:, :, :, insert_position] = self._slice_means[key]['slice_means'].squeeze()
             self._slice_means[key]['slice_means'] = np.array([])
+            logger.info(f'Current RAM usage: {round(psutil.virtual_memory().used / (1024 ** 3), 3)} GB')
 
         
         if key > 53 and (key % 4 == 0) and key < self._num_vols:
             logger.info('launching calculate and publish snr thread')
-            logger.info(f'Current RAM usage: {round(psutil.virtual_memory().used / (1024 ** 3), 3)}')
+
+            # double check that necessary objects exist before calculating SNR
+            if self._fdata_array is None:
+                self._num_vols = ds[(0x0020, 0x0105)].value
+                self._mask_threshold, self._decrement = self.get_mask_threshold(ds)
+                x, y, self._z, _ = self._slice_means[key]['slice_means'].shape
+                self._fdata_array = np.zeros((x, y, self._z, self._num_vols), dtype=np.float64)
+                self._slice_intensity_means = np.zeros((self._z, self._num_vols), dtype=np.float64)
 
             snr_thread = threading.Thread(target=self.calculate_and_publish_snr, args=(key,))
             snr_thread.start()
