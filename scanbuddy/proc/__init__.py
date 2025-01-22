@@ -140,6 +140,8 @@ class Processor:
             time.sleep(2)
             data_path = os.path.dirname(self._instances[key]['path'])
             logger.info(f'removing dicom dir: {data_path}')
+            logger.info(f'dangling files: {os.listdir(data_path)}')
+            logger.info(f'removing {len(os.listdir(data_path)) - 1} dangling files (sub-directory not counted)')
             shutil.rmtree(data_path)       
         
 
