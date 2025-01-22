@@ -142,7 +142,8 @@ class Processor:
             data_path = os.path.dirname(self._instances[key]['path'])
             logger.info(f'removing dicom dir: {data_path}')
             path_obj = Path(data_path)
-            logger.info(f'dangling files: {os.listdir(path_obj.parent.absolute())}')
+            files = [f for f in os.listdir(path_obj.parent.absolute()) if os.path.isfile(f)]
+            logger.info(f'dangling files: {files}')
             logger.info(f'removing {len(os.listdir(path_obj.parent.absolute())) - 1} dangling files (sub-directory not counted)')
             shutil.rmtree(data_path)
         
