@@ -144,7 +144,7 @@ class Processor:
             path_obj = Path(data_path)
             files = [f for f in os.listdir(path_obj.parent.absolute()) if os.path.isfile(f)]
             logger.info(f'dangling files: {files}')
-            logger.info(f'removing {len(os.listdir(path_obj.parent.absolute())) - 1} dangling files (sub-directory not counted)')
+            logger.info(f'removing {len(os.listdir(path_obj.parent.absolute())) - 1} dangling files')
             shutil.rmtree(data_path)
         
 
