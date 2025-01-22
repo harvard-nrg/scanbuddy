@@ -11,6 +11,7 @@ import datetime
 import threading
 import numpy as np
 from pubsub import pub
+from pathlib import Path
 from sortedcontainers import SortedDict
 from scanbuddy.proc.snr import SNR
 
@@ -140,9 +141,10 @@ class Processor:
             time.sleep(2)
             data_path = os.path.dirname(self._instances[key]['path'])
             logger.info(f'removing dicom dir: {data_path}')
-            logger.info(f'dangling files: {os.listdir(data_path)}')
-            logger.info(f'removing {len(os.listdir(data_path)) - 1} dangling files (sub-directory not counted)')
-            shutil.rmtree(data_path)       
+            path_obj = Path(data_path)
+            logger.info(f'dangling files: {os.listdir(path_obj.parent.absolute())}')
+            logger.info(f'removing {len(os.listdir(path_obj.parent.absolute())) - 1} dangling files (sub-directory not counted)')
+            shutil.rmtree(data_path)
         
 
     def calculate_and_publish_snr(self, key):
