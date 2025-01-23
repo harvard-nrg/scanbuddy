@@ -77,7 +77,7 @@ class DicomHandler(PatternMatchingEventHandler):
             self.file_size = new_file_size
             logger.info(f'file size is now {self.file_size}')
             raise IOError
-        return pydicom.dcmread(dicom, stop_before_pixels=True)
+        return pydicom.dcmread(dicom, stop_before_pixels=False)
 
     def check_series(self, ds, old_path):
         if not hasattr(self, 'first_dcm_series'):
