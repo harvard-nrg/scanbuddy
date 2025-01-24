@@ -17,14 +17,14 @@ Scanbuddy also provides an estimate of the Signal-to-Noise Ratio (SNR) with the 
 
 What You Will Need
 ^^^^^^^^^^^^^^^^^^
-Scanbuddy should be run on a standalone machine (separate from the scanner host PC) that runs Linux and you have sudo privileges. We've used several distibutions of Linux in development (ubuntu, debian, asahi) and all have run Scanbuddy successfully. Scanbuddy may work on MacOS and/or Windows, though it has not been tested by the developers. The Scanbuddy machine should have 16 GB of RAM if possible. It may still work with less memory depending on the size of the data being acquired. The machine should be capable of running a web broswer and Docker. You will also need a monitor to connect to the machine to display the motion plots.
+Scanbuddy should be run on a standalone machine (separate from the scanner host PC) that runs Linux and you have sudo privileges. We've used several distributions of Linux in development (ubuntu, debian, asahi) and all have run Scanbuddy successfully. Scanbuddy may work on MacOS and/or Windows, though it has not been tested by the developers. The Scanbuddy machine should have 16 GB of RAM if possible. It may still work with less memory depending on the size of the data being acquired. The machine should be capable of running a web browser and Docker. You will also need a monitor to connect to the machine to display the motion plots.
 
 .. note::
      Take a look at installing Docker on Linux `here <https://docs.docker.com/engine/install/>`_.
 
 Samba Share
 ^^^^^^^^^^^
-Data streaming from the scanner to the Scanbuddy machine should be setup via a Samba share mount. Samba enables the scanner to stream dicom data directly to the Scanbuddy machine so that Scanbuddy can build the motion plots and display them when the scan ends.
+Data streaming from the scanner to the Scanbuddy machine should be set up via a Samba share mount. Samba enables the scanner to stream dicom data directly to the Scanbuddy machine so that Scanbuddy can build the motion plots and display them when the scan ends.
 
 Let's get Samba up and running! First thing to do, install Samba:
 
@@ -85,12 +85,16 @@ Building the Container Image
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Scanbuddy is packaged up in a Docker container to abstract away the hassle of installing the specific software it needs. Hurray for Docker! We've built and pushed the Docker image to Github Container Repository so you can run ``docker pull`` to build it on your local (Scanbuddy) machine. Take a look at this page to pull the latest version: `Scanbuddy image <https://github.com/harvard-nrg/scanbuddy/pkgs/container/scanbuddy>`_.
 
-.. note::
-     Make sure you verify the CPU architecture of the machine you're using and build the correct version of the container! The ``uname -m`` command will tell you what you've got.
-
-Verify the container has been built by running
+Build the container by running:
 
 .. code-block:: shell
+
+     docker pull ghcr.io/harvard-nrg/scanbuddy:latest
+
+Then verify that it built correctly:
+
+.. code-block:: shell
+
      docker image ls
 
 You should see the Scanbuddy image listed there (check that it's the correct version).
@@ -100,6 +104,7 @@ Redis Container
 One feature of Scanbuddy is checking that the head coil is plugged in correctly and communicating correctly with the Scanner PC. We use Redis as a lightweight database to keep track of the head coil status. Run this command to build and run the redis container:
 
 .. code-block:: shell
+
      docker run -d --name redis -p 8001:8001 redis/redis-stack:latest
 
 Running Scanbuddy
@@ -112,14 +117,14 @@ You can make this whatever you want (I would recommend a string) inside of your 
 
 .. code-block:: shell
 
-     SCANBUDDY_SESSION_ID='best_session_ever'
-     SCANBUDDY_SESSION_KEY='1234'
+     export SCANBUDDY_SESSION_PASS='iLoveScanbuddy'
+     export SCANBUDDY_SESSION_KEY='1234'
 
 .. note::
      Remember to reload your shell environment!
 
-Scanbuddy Command and Argument
-""""""""""""""""""""""""""""""
+Scanbuddy Command and Arguments
+"""""""""""""""""""""""""""""""
 
 
 
