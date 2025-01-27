@@ -53,7 +53,7 @@ ENV PATH="${MFG_PREFIX}/bin:${PATH}"
 # install scanbuddy
 RUN mamba create -y -n python3.13t --override-channels -c conda-forge python-freethreading
 RUN mamba env config vars set PYTHON_GIL=0 -n python3.13t
-ARG SB_VERSION="main"
-RUN mamba run -n python3.13t --no-capture-output python3 -m pip install "git+https://github.com/harvard-nrg/scanbuddy.git@${SB_VERSION}"
+COPY . /tmp/scanbuddy
+RUN mamba run -n python3.13t --no-capture-output python3 -m pip install /tmp/scanbuddy
 
 ENTRYPOINT ["mamba", "run", "-n", "python3.13t", "--no-capture-output", "start.py"]
