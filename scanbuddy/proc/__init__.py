@@ -54,7 +54,7 @@ class Processor:
     def listener(self, ds, path, multi_echo):
         key = int(ds.InstanceNumber)
         if multi_echo:
-            key = get_new_key(key)
+            key = self.get_new_key(key)
         self._instances[key] = {
             'path': path,
             'volreg': None,
