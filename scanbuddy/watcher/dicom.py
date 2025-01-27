@@ -116,7 +116,7 @@ class DicomHandler(PatternMatchingEventHandler):
             logger.info('single echo scan detected')
             return False, False
         else:
-            logger.info('multi-echo scan found, wrong echo time, moving on')
+            logger.info('multi-echo scan found, wrong echo time, deleting file and moving on')
             return True, False
 
     def get_echo_time(self, ds):
