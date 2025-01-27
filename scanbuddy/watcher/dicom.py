@@ -51,12 +51,13 @@ class DicomHandler(PatternMatchingEventHandler):
                 logger.info(f'file {path} no longer exists')
                 return
             ds = self.read_dicom(path)
-            if self.check_echo(ds) is False:
+            is_multi_echo, is_TE2 = self.check_echo(ds)
+            if is_TE2 is False:
                 return
             self.check_series(ds, path)
             path = self.construct_path(path, ds)
             logger.info(f'publishing message to topic=incoming with ds={path}')
-            pub.sendMessage('incoming', ds=ds, path=path)
+            pub.sendMessage('incoming', ds=ds, path=path, multi_echo=is_multi_echo)
         except InvalidDicomError as e:
             logger.info(f'not a dicom file {path}')
         except FileNotFoundError as e:
@@ -109,13 +110,13 @@ class DicomHandler(PatternMatchingEventHandler):
         if 'TE2' in scan_string:
             logger.info('multi-echo scan detected')
             logger.info(f'using 2nd echo time: {self.get_echo_time(ds)}')
-            return True
+            return True, True
         elif 'TE' not in scan_string:
             logger.info('single echo scan detected')
-            return True
+            return False, False
         else:
-            logger.info('multi-echo scan found, wrong echo time')
-            return False
+            logger.info('multi-echo scan found, wrong echo time, moving on')
+            return True, False
 
     def get_echo_time(self, ds):
         sequence = ds[(0x5200, 0x9230)][0]

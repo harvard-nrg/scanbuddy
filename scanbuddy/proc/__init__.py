@@ -22,7 +22,6 @@ class Processor:
         self.reset()
         pub.subscribe(self.reset, 'reset')
         pub.subscribe(self.listener, 'incoming')
-        self._fdata_array = np.array([])
 
     def reset(self):
         self._instances = SortedDict()
@@ -52,8 +51,10 @@ class Processor:
                 total_size += mask.nbytes
         return total_size
 
-    def listener(self, ds, path):
+    def listener(self, ds, path, multi_echo):
         key = int(ds.InstanceNumber)
+        if multi_echo:
+            key = get_new_key(key)
         self._instances[key] = {
             'path': path,
             'volreg': None,
@@ -376,6 +377,8 @@ class Processor:
         seq = seq[(0x0018, 0x9042)][0]
         return seq[(0x0018, 0x1250)].value
 
+    def get_new_key(self, instance_number):
+        return ((instance_number - 2) // 4) + 1
 
     def check_snr(self, key):
         tasks = list()
