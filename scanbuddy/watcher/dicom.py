@@ -52,7 +52,8 @@ class DicomHandler(PatternMatchingEventHandler):
                 return
             ds = self.read_dicom(path)
             is_multi_echo, is_TE2 = self.check_echo(ds)
-            if is_TE2 is False:
+            if is_multi_echo is True and is_TE2 is False:
+                os.remove(path)
                 return
             self.check_series(ds, path)
             path = self.construct_path(path, ds)

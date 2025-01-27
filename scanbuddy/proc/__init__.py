@@ -55,6 +55,7 @@ class Processor:
         key = int(ds.InstanceNumber)
         if multi_echo:
             key = self.get_new_key(key)
+            logger.info(f'new multi-echo key: {key}')
         self._instances[key] = {
             'path': path,
             'volreg': None,
