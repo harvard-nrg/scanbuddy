@@ -26,4 +26,4 @@ jobs:
         with:
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: scanbuddy:${{ github.ref_name }}
+          tags: ghcr.io/scanbuddy:${{ github.ref_name }}
