@@ -20,11 +20,18 @@ services:
       - /home/qc/scanbuddy:/scanbuddy
       - /home/qc/scanbuddy-data:/data
     command: ["-c", "/scanbuddy/config.yaml", "--folder", "/data", "--host", "0.0.0.0", "--port", "8080"]
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsSL -u scanbuddy:$$SCANBUDDY_PASS http://localhost:8080 | grep -q DashRenderer"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   redis:
     image: redis:latest
     restart: unless-stopped
     network_mode: host
+    healthcheck:
+      test: ["CMD", "redis-cli","ping"]
 
   samba:
     image: ghcr.io/servercontainers/samba
