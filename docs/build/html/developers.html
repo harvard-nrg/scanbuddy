@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Developer Documentation &mdash; Scanbuddy  documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="_static/copybutton.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/clipboard.min.js"></script>
+        <script src="_static/copybutton.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Welcome to Scanbuddy’s documentation!" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> Scanbuddy
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Developer Documentation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#hpc-local-installation">HPC/Local Installation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#creating-a-virtual-environment">Creating a Virtual Environment</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#installing-dwiqc-and-dependencies">Installing DWIQC and Dependencies</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#xnat-installation">XNAT Installation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#building-the-plugin">Building the Plugin</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#configuring-nginx">Configuring Nginx</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#activating-the-plugin">Activating the Plugin</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Scanbuddy</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Developer Documentation</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/developers.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="developer-documentation">
+<h1>Developer Documentation<a class="headerlink" href="#developer-documentation" title="Permalink to this headline"></a></h1>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This documentation assumes a basic understanding of the command line. Here’s a quick (and free!) crash <a class="reference external" href="https://www.codecademy.com/learn/learn-the-command-line">course</a> if needed.</p>
+</div>
+<section id="hpc-local-installation">
+<h2>HPC/Local Installation<a class="headerlink" href="#hpc-local-installation" title="Permalink to this headline"></a></h2>
+<p>At the moment, the only supported way to install <em>DWIQC</em> is via “bare metal” using the <a class="reference external" href="https://www.python.org/downloads/">python</a> package manager <a class="reference external" href="https://pip.pypa.io/en/stable/installation/">pip</a>. A python version &gt;=3.4 will come with pip preinstalled. Esnure that you have both python and pip installed on your HPC or local machine before attempting to install <em>DWIQC</em>.</p>
+<section id="creating-a-virtual-environment">
+<h3>Creating a Virtual Environment<a class="headerlink" href="#creating-a-virtual-environment" title="Permalink to this headline"></a></h3>
+<p>With python and pip installed, you can download and install <em>DWIQC</em> from <a class="reference external" href="https://pypi.org/project/dwiqc/">PyPi</a>. You may choose to do so in a <a class="reference external" href="https://docs.python.org/3/library/venv.html">virtual environment</a>. The examples here (and in other portions of the documentation) will assume that you are using a virtual environment, though it won’t affect any installation or running instructions.</p>
+<p>To create a virtual environment, named dwiqc in this example, run the following command:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>python3<span class="w"> </span>-m<span class="w"> </span>venv<span class="w"> </span>dwiqc
+</pre></div>
+</div>
+<p>Activate the virtual environment:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="nb">source</span><span class="w"> </span>dwiqc/bin/activate
+</pre></div>
+</div>
+<p>Your terminal window should look something like this with the name of the virtual environment in parentheses and a directory with the virtual env name.</p>
+<img alt="images/venv.png" src="images/venv.png" />
+</section>
+<section id="installing-dwiqc-and-dependencies">
+<h3>Installing DWIQC and Dependencies<a class="headerlink" href="#installing-dwiqc-and-dependencies" title="Permalink to this headline"></a></h3>
+<p>Install <em>DWIQC</em> from the command line using pip:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>dwiqc
+</pre></div>
+</div>
+<p><em>DWIQC</em> will being installing along with some of its dependencies. It should only take a few moments. Run <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">show</span> <span class="pre">dwiqc</span></code> to ensure that it was installed successfully.</p>
+<p><em>DWIQC</em> relies on the <a class="reference external" href="https://github.com/MASILab/PreQual">prequal</a>, <a class="reference external" href="https://qsiprep.readthedocs.io/en/latest/">qsiprep</a>, <a class="reference external" href="https://www.chromium.org/chromium-projects/">chromium</a>, and <a class="reference external" href="https://fsl.fmrib.ox.ac.uk/fsl/fslwiki">FSL</a> software packages so we will need to download those respective containers into your local environment. <em>DWIQC</em> uses specific and customized versions of these packages. They can be easily installed using <em>DWIQC</em>’s <em>install-containers</em> functionality. <em>DWIQC</em> will default to installing the containers at <code class="docutils literal notranslate"><span class="pre">~/.config/dwiqc/containers</span></code>; however, the user can specify a download directory using the <code class="docutils literal notranslate"><span class="pre">--install-location</span></code> commmand:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>dwiQC.py<span class="w"> </span>install-containers<span class="w"> </span>--install-location<span class="w"> </span>/path/to/install/location
+</pre></div>
+</div>
+<p>The containers will take 30-45 minutes to download depending on your connection speed. The containers will occupy ~30GB of storage space so pick a directory with plenty of free storage. Once the containers are downloaded, you’ll be ready to <a class="reference external" href="xnat.html">run dwiqc</a>!</p>
+</section>
+</section>
+<section id="xnat-installation">
+<h2>XNAT Installation<a class="headerlink" href="#xnat-installation" title="Permalink to this headline"></a></h2>
+<p>The following section will describe how to build and configure <em>DWIQC</em> as an <a class="reference external" href="https://xnat.org">XNAT</a> plugin.</p>
+<section id="building-the-plugin">
+<h3>Building the Plugin<a class="headerlink" href="#building-the-plugin" title="Permalink to this headline"></a></h3>
+<p>Clone the <code class="docutils literal notranslate"><span class="pre">xnat-1.8</span></code> branch from the <code class="docutils literal notranslate"><span class="pre">github.com/harvard-nrg/dwiqc</span></code>
+repository</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">clone</span> <span class="o">-</span><span class="n">b</span> <span class="n">xnat</span><span class="o">-</span><span class="mf">1.8</span> <span class="o">--</span><span class="n">single</span><span class="o">-</span><span class="n">branch</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">harvard</span><span class="o">-</span><span class="n">nrg</span><span class="o">/</span><span class="n">dwiqc</span>
+</pre></div>
+</div>
+<p>Change into the repository directory and compile the plugin using <a class="reference external" href="https://gradle.org/install/">Gradle</a></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">./</span><span class="n">gradlew</span> <span class="n">jar</span>
+</pre></div>
+</div>
+<p>Once the plugin has been compiled, move the resulting <code class="docutils literal notranslate"><span class="pre">.jar</span></code> into your XNAT plugins directory</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>mv ./build/libs/dwiqc-plugin-1.0.0.jar ${XNAT_HOME}/plugins/
+</pre></div>
+</div>
+</section>
+<section id="configuring-nginx">
+<h3>Configuring Nginx<a class="headerlink" href="#configuring-nginx" title="Permalink to this headline"></a></h3>
+<p>You will have to do a little bit of extra configuration in the <code class="docutils literal notranslate"><span class="pre">nginx.conf</span></code> file on the XNAT server. Without this configuration, XNAT will start downloading all of the DWIQC reports to your local machine and you won’t be able to view them on the browser. Here’s a way around that!</p>
+<p>First, navigate to your <code class="docutils literal notranslate"><span class="pre">nginx</span></code> directory. This might be located at <code class="docutils literal notranslate"><span class="pre">/etc/nginx</span></code> if you’re running XNAT on “bare metal” or under your <code class="docutils literal notranslate"><span class="pre">xnat-docker-compose</span></code> directory if you’re using that to run your XNAT. Once you’re there, cd into the <code class="docutils literal notranslate"><span class="pre">conf.d</span></code> directory and open up the server config file using your favorite text editor. <code class="docutils literal notranslate"><span class="pre">xnat-docker-compose</span></code> users may have a file named <code class="docutils literal notranslate"><span class="pre">nginx.conf</span></code>.</p>
+<p>Your <code class="docutils literal notranslate"><span class="pre">nginx.conf</span></code> file may look something like this (lines of interest highlighted):</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>  #user www-data;
+  worker_processes auto;
+  #pid /run/nginx.pid;
+  events {
+    worker_connections 1024;
+    # multi_accept on;
+  }
+  http {
+    ##
+    # Basic Settings
+    ##
+    sendfile on;
+    tcp_nopush on;
+    tcp_nodelay on;
+    keepalive_timeout 100;
+    types_hash_max_size 2048;
+    # server_tokens off;
+    # server_names_hash_bucket_size 64;
+    # server_name_in_redirect off;
+    include /etc/nginx/mime.types;
+    default_type application/octet-stream;
+    ##
+    # SSL Settings
+    ##
+    #ssl_protocols TLSv1 TLSv1.1 TLSv1.2; # Dropping SSLv3, ref: POODLE
+    #ssl_prefer_server_ciphers on;
+    ##
+    # Logging Settings
+    ##
+    access_log /var/log/nginx/access.log;
+    error_log /var/log/nginx/error.log;
+    ##
+    # Gzip Settings
+    ##
+    gzip on;
+    gzip_disable &quot;msie6&quot;;
+    # gzip_vary on;
+    # gzip_proxied any;
+    # gzip_comp_level 6;
+    # gzip_buffers 16 8k;
+    # gzip_http_version 1.1;
+    # gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript;
+    ##
+    # Virtual Host Configs
+    ##
+    #include /etc/nginx/conf.d/*.conf;
+    #include /etc/nginx/sites-enabled/*;
+    server {
+      listen 80;
+      return                301 https://cbscentral02.rc.fas.harvard.edu$request_uri;
+    }
+    server {
+      listen 443 ssl;
+      ssl_certificate       /etc/pki/tls/cbscentral02_rc_fas_harvard_edu.crt;
+      ssl_certificate_key   /etc/pki/tls/cbscentral02_rc_fas_harvard_edu.key;
+      location / {
+          proxy_pass                          http://xnat-web:8080;
+          proxy_redirect                      http://xnat-web:8080 $scheme://localhost;
+          proxy_set_header Host               $host;
+          proxy_set_header X-Real-IP          $remote_addr;
+          proxy_set_header X-Forwarded-Host   $host;
+          proxy_set_header X-Forwarded-Server $host;
+          proxy_set_header X-Forwarded-For    $proxy_add_x_forwarded_for;
+          proxy_connect_timeout               150;
+          proxy_send_timeout                  100;
+          proxy_read_timeout                  100;
+          proxy_buffers                       8 4k;
+          proxy_max_temp_file_size            2048m;
+          client_max_body_size                0;
+          client_body_buffer_size             128k;
+<span class="hll">          # Don&#39;t download pdf reports when imbedded in an iframe
+</span><span class="hll">          location ~ /data.*\.pdf$ {
+</span><span class="hll">            proxy_pass http://xnat-web:8080;
+</span><span class="hll">            proxy_hide_header Content-Disposition;
+</span><span class="hll">          }
+</span><span class="hll">          # Don&#39;t download qsiprep html report when imbedded in an iframe
+</span><span class="hll">          location ~ /data.*qsiprep\.html$ {
+</span><span class="hll">            proxy_pass http://xnat-web:8080;
+</span><span class="hll">            proxy_hide_header Content-Disposition;
+</span><span class="hll">          }
+</span><span class="hll">          # Don&#39;t download svg files when imbedded in an iframe
+</span><span class="hll">          location ~ /data.*\.svg$ {
+</span><span class="hll">            proxy_pass http://xnat-web:8080;
+</span><span class="hll">            proxy_hide_header Content-Disposition;
+</span><span class="hll">          }
+</span>      }
+      access_log /var/log/nginx/xnat.access.log;
+      error_log /var/log/nginx/xnat.error.log;
+  }
+  }
+</pre></div>
+</div>
+<p>This is a bit overwhelming but the part to focus on is at the bottom starting with the comment that says <cite>Don’t download pdf reports when imbedded in an iframe</cite>. Copy and paste all three <code class="docutils literal notranslate"><span class="pre">location</span></code> blocks so that XNAT doesn’t automatically download the pdf files, qsiprep.html and the svg files. So just this section:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="c1"># Don&#39;t download pdf reports when imbedded in an iframe</span>
+<span class="l l-Scalar l-Scalar-Plain">location ~ /data.*\.pdf$ {</span>
+<span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">proxy_pass http://xnat-web:8080;</span>
+<span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">proxy_hide_header Content-Disposition;</span>
+<span class="l l-Scalar l-Scalar-Plain">}</span>
+<span class="l l-Scalar l-Scalar-Plain"># Don&#39;t download qsiprep html report when imbedded in an iframe</span>
+<span class="l l-Scalar l-Scalar-Plain">location ~ /data.*qsiprep\.html$ {</span>
+<span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">proxy_pass http://xnat-web:8080;</span>
+<span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">proxy_hide_header Content-Disposition;</span>
+<span class="l l-Scalar l-Scalar-Plain">}</span>
+<span class="l l-Scalar l-Scalar-Plain"># Don&#39;t download svg files when imbedded in an iframe</span>
+<span class="l l-Scalar l-Scalar-Plain">location ~ /data.*\.svg$ {</span>
+<span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">proxy_pass http://xnat-web:8080;</span>
+<span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">proxy_hide_header Content-Disposition;</span>
+<span class="l l-Scalar l-Scalar-Plain">}</span>
+</pre></div>
+</div>
+<p>With that added to the <code class="docutils literal notranslate"><span class="pre">nginx.conf</span></code> file, you’re ready to activate your plugin!</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If tomcat or the docker containers are running when you make this change you will have to restart them!</p>
+</div>
+</section>
+<section id="activating-the-plugin">
+<h3>Activating the Plugin<a class="headerlink" href="#activating-the-plugin" title="Permalink to this headline"></a></h3>
+<p>There are several necessary steps to activate the <em>DWIQC</em> plugin via your XNAT instance’s home page. First, login and click on the <em>Administer</em> button at the top:</p>
+<img alt="images/administer-button.png" src="images/administer-button.png" />
+<p>Next, click on <em>Data Types</em>:</p>
+<img alt="images/data-types.png" src="images/data-types.png" />
+<p>Click on <em>Setup Additional Data Type</em>:</p>
+<img alt="images/setup-data-type.png" src="images/setup-data-type.png" />
+<p>You will see a drop down menu. Select <em>neuroinfo:dwiqc</em> and click <em>Submit</em>.</p>
+<img alt="images/neuroinfo-dwiqc.png" src="images/neuroinfo-dwiqc.png" />
+<p>You can leave all of the True/False statements as they are in this window (unless you have a reason to change them). Fill in the boxes labeled <em>Singular Name</em>, <em>Plural Name</em>, and <em>Category</em> with the information shown below and click <em>Next</em>.</p>
+<img alt="images/dwiqc-access-options.png" src="images/dwiqc-access-options.png" />
+<p>Click <em>Next</em> through the remainder of the windows without editing anything, and Voila! <em>DWIQC</em> is now configured on your XNAT instance.</p>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="Welcome to Scanbuddy’s documentation!" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, info@neuroinfo.org.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
