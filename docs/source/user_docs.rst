@@ -12,7 +12,7 @@ Let's start with what Scanbuddy is all about. fMRI is a powerful research and cl
 
 To combat subject motion and optimize data quality, motion-correcting software algorithms can be employed at the post-processing stage, as well as data deletion and imputation methods. However, there are instances of subject motion being severe enough to make the dataset unusable. This is where Scanbuddy comes in! Scanbuddy produces motion plots to be viewed by researchers at the time of data acquisition, appearing on screen at the conclusion of fMRI scans. Individual researchers will determine acceptable motion standards. Seeing motion plots at acquisition can help researchers decide if a scan should be re-acquired. You no longer have to wait until data processing to get an idea of how much your subject has or has not moved.
 
-Scanbuddy also provides an estimate of the Signal-to-Noise Ratio (SNR) with the motion plots to give researchers an idea of overall data quality. Scanbuddy does not save motion plots by default and does not store data on its host machine. Scanbuddy will create a new motion plot and compute a new SNR metric for every fMRI scan acquired. Scanbuddy currently does not support Multi-Echo BOLD imaging, though work is being done to make this feature available soon. Scanbuddy is containerized with docker and is available on Github Container Repository.
+Scanbuddy also provides an estimate of the Signal-to-Noise Ratio (SNR) with the motion plots to give researchers an idea of overall data quality. Scanbuddy does not save motion plots by default and does not store data on its host machine. Scanbuddy will create a new motion plot and compute a new SNR metric for every fMRI scan acquired. Scanbuddy also supports multi-echo BOLD scans with the assumption that the second echo (TE2) time is the TE of interest. Scanbuddy is containerized with docker and is available on Github Container Repository.
 
 
 What You Will Need
@@ -161,15 +161,6 @@ You can make this whatever you want (I would recommend a string) inside of your 
 .. note::
      Remember to reload your shell environment!
 
-Scanbuddy Command and Arguments
-"""""""""""""""""""""""""""""""
-
-Here is an example of a scanbuddy command you might run:
-
-.. code-block:: shell
-
-     docker run -d -e SCANBUDDY_PASS -e SCANBUDDY_SESSION_KEY --user 1000:1000 --network host -v /data/bay1scanner/bold:/data ghcr.io/harvard-nrg/scanbuddy:latest --folder /data --config /data/scanbuddy.yaml
-
 Example Config File
 """""""""""""""""""
 
@@ -200,6 +191,63 @@ Example Config File
                  1. Check head coil connection for debris or other obstructions.
                  2. Reconnect head coil securely.
                  3. Ensure that anterior and posterior coil elements are present.
+
+Feel free to adjust the config file however you need! It should be a ``.yaml`` file. You can also look at this example on `github <https://github.com/harvard-nrg/scanbuddy/blob/main/example-config.yaml>`_.
+
+Scanbuddy Command and Arguments
+"""""""""""""""""""""""""""""""
+
+With everything set up you should be able to run Scanbuddy! Here is an example of a scanbuddy command you might run:
+
+.. code-block:: shell
+
+     docker run -d -e SCANBUDDY_PASS -e SCANBUDDY_SESSION_KEY --user 1000:1000 --network host -v /data/bay1scanner/bold:/data ghcr.io/harvard-nrg/scanbuddy:latest --folder /data --config /data/scanbuddy.yaml
+
+Keep an eye on the docker logs for any issues/errors. You can get the Scanbuddy container id by running ``docker container ls``. Then run:
+
+    .. code-block:: shell
+
+        docker container logs --follow CONTAINER_ID
+
+Replace CONTAINER_ID with the id of your Scanbuddy container (they are all unique).
+
+Expected Output
+^^^^^^^^^^^^^^^
+
+The Scanbuddy initialization window should look something like this:
+
+.. image:: images/start_scanbuddy.png
+
+When a BOLD scan starts you will see Scanbuddy start to perform calculations. Here's an example:
+
+.. image:: images/volreg_calc.png
+
+At the conclusion of the scan you will see a motion plot appear on the Scanbuddy display along with a few other helpful metrics. Take a look at this example:
+
+.. image:: images/concluded_scan.png
+
+Here's another example with larger motion artifacts:
+
+.. image:: images/large_motion.png
+
+Understanding the Plots and Metrics Table
+"""""""""""""""""""""""""""""""""""""""""
+
+The Scanbuddy motion plots show the participant movement over the duration of the scan in 6 different directions: x, y, z, roll, pitch, yaw. They are split into the "Translations" graph for x, y, z and into the "Rotations" graph for roll, ptich, yaw. The "Translations" plot has N on the x-axis meaning number of volumes. The Y-axis is movement in millimeteres. The "Rotations" plot also has N on the x-axis for volumes and the y-axis is degrees of rotation. 
+
+The motion shown is volume-to-volume, meaning that the amount of motion shown in volume 150 is relative to where the participant's head was at volume 149. It is not registered to volume one or some other arbitrary volume. See the `technical appendix <technical_appendix.html>`_ secion for more details on how the motion calculation happens and specific reasoning for this approach.
+
+The "Motion Metrics" table shows data that may be of interest to users. The table calls users' attention to large motion artifacts with the "Movements > .5 mm" and "Movements > 1mm" rows. Additionally, Scanbuddy provdies a preliminary SNR metric estimation. See the `technical appendix <technical_appendix.html>`_ for details on SNR calculation.
+
+
+
+
+
+
+
+
+
+
 
 
 
