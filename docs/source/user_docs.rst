@@ -10,14 +10,14 @@ Overview
 ^^^^^^^^
 Let's start with what Scanbuddy is all about. fMRI is a powerful research and clinical tool that allows us to peer into the brain function of living humans. One of the biggest challenges facing fMRI data quality is subject movement during data acquisition. Even subtle actions, such as swallowing or yawning, can have large impacts on data quality. 
 
-To combat subject motion and optimize data quality, motion-correcting software algorithms can be employed at the post-processing stage, as well as data deletion and imputation methods. However, there are instances of subject motion being severe enough to make the dataset unusable. This is where Scanbuddy comes in! Scanbuddy produces motion plots to be viewed by researchers at the time of data acquisition, appearing on screen at the conclusion of fMRI scans. Individual researchers will determine acceptable motion standards. Seeing motion plots at acquisition can help researchers decide if a scan should be re-acquired. You no longer have to wait until data processing to get an idea of how much your subject has or has not moved.
+To combat subject motion and optimize data quality, motion-correcting software algorithms can be employed in the post-processing stage, as well as data deletion and imputation methods. However, there are instances of subject motion being severe enough to make the dataset unusable. This is where Scanbuddy comes in! Scanbuddy produces motion plots to be viewed by researchers at the time of data acquisition, appearing on screen at the conclusion of fMRI scans. Individual researchers will determine acceptable motion standards. Seeing motion plots at acquisition can help researchers decide if a scan should be re-acquired. You no longer have to wait until data processing to get an idea of how much your subject has or has not moved.
 
-Scanbuddy also provides an estimate of the Signal-to-Noise Ratio (SNR) with the motion plots to give researchers an idea of overall data quality. Scanbuddy does not save motion plots by default and does not store data on its host machine. Scanbuddy will create a new motion plot and compute a new SNR metric for every fMRI scan acquired. Scanbuddy also supports multi-echo BOLD scans with the assumption that the second echo (TE2) time is the TE of interest. Scanbuddy is containerized with docker and is available on Github Container Repository.
+Scanbuddy also provides an estimate of the Signal-to-Noise Ratio (SNR) with the motion plots to give researchers an idea of overall data quality. Scanbuddy does not save motion plots by default and does not store data on its host machine. Scanbuddy will create a new motion plot and compute a new SNR metric for every fMRI scan acquired. Scanbuddy also supports multi-echo BOLD scans with the assumption that the second echo (TE2) time is the TE of interest. Scanbuddy is containerized with Docker and is available on Github Container Repository.
 
 
 What You Will Need
 ^^^^^^^^^^^^^^^^^^
-Scanbuddy should be run on a standalone machine (separate from the scanner host PC) that runs Linux and you have sudo privileges. We've used several distributions of Linux in development (ubuntu, debian, asahi) and all have run Scanbuddy successfully. Scanbuddy may work on MacOS and/or Windows, though it has not been tested by the developers. The Scanbuddy machine should have 16 GB of RAM if possible. It may still work with less memory depending on the size of the data being acquired. The machine should be capable of running a web browser and Docker. You will also need a monitor to connect to the machine to display the motion plots.
+Scanbuddy should be run on a standalone machine (separate from the scanner host PC) that runs Linux and you have sudo privileges. We've used several distributions of Linux in development (ubuntu, debian, asahi) and all have run Scanbuddy successfully. Scanbuddy may work on MacOS and/or Windows, though it has not been tested by the developers. The Scanbuddy machine should have 16 GB of RAM if possible; it may still work with less memory depending on the size of the data being acquired. The machine should be capable of running a web browser and Docker. You will also need a monitor to connect to the machine to display the motion plots.
 
 .. note::
      Take a look at installing Docker on Linux `here <https://docs.docker.com/engine/install/>`_.
@@ -26,7 +26,7 @@ Samba Share
 ^^^^^^^^^^^
 Data streaming from the scanner to the Scanbuddy machine should be set up via a Samba share mount. Samba enables the scanner to stream dicom data directly to the Scanbuddy machine so that Scanbuddy can build the motion plots and display them when the scan ends.
 
-Let's get Samba up and running! First thing to do, install Samba:
+Let's get Samba up and running! First thing to do: install Samba:
 
 .. code-block:: shell
     
@@ -46,7 +46,7 @@ If you are using SE Linux, you will need to make sure this directory is accessib
      sudo semanage fcontext -a -t samba_share_t "/data/folder"
      sudo restorecon -R -v /data/folder
 
-Check ``/var/log/audit/audit.log`` for Samba denial messages. You may not see any messages until the scanner attempts to mount the drive.
+Check ``/var/log/audit/audit.log`` for any Samba denial messages. You may not see any messages until the scanner attempts to mount the drive.
 
 You will also need to create a Samba password. Samba uses its own password database for authentication. The password you choose for Samba may be different from the user's system password. Adding a new Samba user should automatically enable the user, but it's still a good idea to make sure the user is enabled with ``smbpasswd -e username``
 
@@ -107,7 +107,7 @@ We have to tell the scanner which scans should be exported to the Scanbuddy mach
 
 When you click "Enable Auto Export" you should see several more fields appear. The specific information for your system will differ, though the two forward slashes in front of "Target Host" and the one in front of "Target Directory" are important. 
 
-| 7. "Target Host" is the IP address of the machine you're running Scanbuddy on. Work with your local university IT group on this if necessary. "Target Directory" should be the same as the directory you specified in your above Samba Share. "User Name" and "Password" should be admin credentials for the Scanbuddy machine. Otherwise it won't work! Click "Close" and then "Save"
+| 7. "Target Host" is the IP address of the machine you're running Scanbuddy on. Consult with your institution's IT group if necessary. "Target Directory" should be the same as the directory you specified in your above Samba Share. "User Name" and "Password" should be admin credentials for the Scanbuddy machine. Otherwise it won't work! Click "Close" and then "Save"
 
 .. image:: images/step_7_plugin.png
 
@@ -139,7 +139,7 @@ You should see the Scanbuddy image listed there (check that it's the correct ver
 
 Redis Container
 """""""""""""""
-One feature of Scanbuddy is checking that the head coil is plugged in correctly and communicating correctly with the Scanner PC. We use Redis as a lightweight database to keep track of the head coil status. Run this command to build and run the redis container:
+One feature of Scanbuddy is checking that the head coil is plugged in correctly and communicating correctly with the Scanner PC. We use Redis as a lightweight database to keep track of the head coil status. Run this command to build and run the Redis container:
 
 .. code-block:: shell
 
@@ -149,13 +149,13 @@ Running Scanbuddy
 ^^^^^^^^^^^^^^^^^
 With the plugin and Samba configured and the container built, we're ready to run Scanbuddy! 
 
-The first thing to do is set a few environment variables inside of your shell for Scanbuddy: ``SCANBUDDY_SESSION_ID`` and ``SCANBUDDY_SESSION_KEY``
+The first thing to do is set a few environment variables inside of your shell for Scanbuddy: ``SCANBUDDY_PASS`` and ``SCANBUDDY_SESSION_KEY``
 
 You can make this whatever you want (I would recommend a string) inside of your ``~/.bashrc`` file:
 
 .. code-block:: shell
 
-     export SCANBUDDY_SESSION_PASS='iLoveScanbuddy'
+     export SCANBUDDY_PASS='iLoveScanbuddy'
      export SCANBUDDY_SESSION_KEY='1234'
 
 .. note::
@@ -163,11 +163,14 @@ You can make this whatever you want (I would recommend a string) inside of your 
 
 Example Config File
 """""""""""""""""""
+We need to ensure that Scanbuddy's browser display is secure in the event it gets added to your institutional network. You shouldn't have to change anything under ``app`` or ``auth`` if you set those environment variables above. Scanbuddy will prompt you for the username and password you provide here when you open the browser display.
+
+In addition to motion plotting and SNR calculation, Scanbuddy will also check your scans for headcoil elements. For example, if the headcoil is not plugged in all the way (e.g. it's missing the HEP element) then Scanbuddy will catch it and display a warning message on the screen. The default message is the one shown below under ``message:``. The coil_elements example shown here is for a 32- channel headcoil, though other types of headcoils may be added.
 
 .. code-block:: yaml
 
      app:
-         title: Realtime fMRI Motion
+         title: fMRI Motion
          session_secret:
              env: SCANBUDDY_SESSION_KEY
          auth:
@@ -203,18 +206,22 @@ With everything set up you should be able to run Scanbuddy! Here is an example o
 
      docker run -d -e SCANBUDDY_PASS -e SCANBUDDY_SESSION_KEY --user 1000:1000 --network host -v /data/bay1scanner/bold:/data ghcr.io/harvard-nrg/scanbuddy:latest --folder /data --config /data/scanbuddy.yaml
 
-Keep an eye on the docker logs for any issues/errors. You can get the Scanbuddy container id by running ``docker container ls``. Then run:
+Keep an eye on the Docker logs for any issues/errors. You can get the Scanbuddy container id by running ``docker container ls``. Then run:
 
     .. code-block:: shell
 
         docker container logs --follow CONTAINER_ID
 
-Replace CONTAINER_ID with the id of your Scanbuddy container (they are all unique).
+Replace CONTAINER_ID with the ID of your Scanbuddy container (they are all unique).
 
 Expected Output
 ^^^^^^^^^^^^^^^
 
-The Scanbuddy initialization window should look something like this:
+Open up your favorite web browser and put ``http://127.0.0.1:8080`` in the url field. You should see an empty plot:
+
+.. image:: images/start_browser.png
+
+In the Docker log file you should see the Scanbuddy initialization window that looks something like this:
 
 .. image:: images/start_scanbuddy.png
 
@@ -233,22 +240,13 @@ Here's another example with larger motion artifacts:
 Understanding the Plots and Metrics Table
 """""""""""""""""""""""""""""""""""""""""
 
-The Scanbuddy motion plots show the participant movement over the duration of the scan in 6 different directions: x, y, z, roll, pitch, yaw. They are split into the "Translations" graph for x, y, z and into the "Rotations" graph for roll, ptich, yaw. The "Translations" plot has N on the x-axis meaning number of volumes. The Y-axis is movement in millimeteres. The "Rotations" plot also has N on the x-axis for volumes and the y-axis is degrees of rotation. 
+The Scanbuddy motion plots show the participant movement over the duration of the scan in 6 different directions: x, y, z, roll, pitch, yaw. They are split into the "Translations" graph for x, y, z and into the "Rotations" graph for roll, pitch, yaw. The "Translations" plot has N on the x-axis meaning number of volumes. The Y-axis is movement in millimeters. The "Rotations" plot also has N on the x-axis for volumes and the y-axis is degrees of rotation. 
 
-The motion shown is volume-to-volume, meaning that the amount of motion shown in volume 150 is relative to where the participant's head was at volume 149. It is not registered to volume one or some other arbitrary volume. See the `technical appendix <technical_appendix.html>`_ secion for more details on how the motion calculation happens and specific reasoning for this approach.
+The motion shown is volume-to-volume, meaning that the amount of motion shown in volume 150 is relative to where the participant's head was at volume 149. It is not registered to volume one or some other arbitrary volume. See the `technical appendix <technical_appendix.html>`_ section for more details on how the motion calculation happens and specific reasoning for this approach.
 
-The "Motion Metrics" table shows data that may be of interest to users. The table calls users' attention to large motion artifacts with the "Movements > .5 mm" and "Movements > 1mm" rows. Additionally, Scanbuddy provdies a preliminary SNR metric estimation. See the `technical appendix <technical_appendix.html>`_ for details on SNR calculation.
+The "Motion Metrics" table shows data that may be of interest to users. The table calls users' attention to large motion artifacts with the "Movements > .5 mm" and "Movements > 1 mm" rows. Additionally, Scanbuddy provides a preliminary SNR metric estimation. See the `technical appendix <technical_appendix.html>`_ for details on SNR calculation.
 
-
-
-
-
-
-
-
-
-
-
+And that's Scanbuddy! Reach out to info@neuroinfo.org with any additional questions or comments. See also: `Scanbuddy github repository <https://github.com/harvard-nrg/scanbuddy>`_
 
 
 
