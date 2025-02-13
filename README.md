@@ -8,7 +8,7 @@ Whenever a DICOM from a new series is seen, all data from the previous series is
 
 # Installation and Usage
 
-Scanbuddy is available as a docker container. See the [Scanbuddy ghcr.io](https://github.com/harvard-nrg/scanbuddy/pkgs/container/scanbuddy) page and the [Scanbuddy Read the Docs](https://scanbuddy.readthedocs.io/en/latest/user_docs.html). 
+Scanbuddy is available as a docker container. See the [Scanbuddy ghcr.io](https://github.com/harvard-nrg/scanbuddy/pkgs/container/scanbuddy) page and the [Scanbuddy Documentation](https://scanbuddy.readthedocs.io/en/latest). 
 
 # Contributing to Scanbuddy
 
