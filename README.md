@@ -6,13 +6,9 @@ Scanbuddy watches a user-specified folder for creation of an interior incoming f
 
 Whenever a DICOM from a new series is seen, all data from the previous series is discarded.
 
-# Installation
+# Installation and Usage
 
-Documentation forthcoming!
-
-# Usage
-
-Documentation forthcoming!
+Scanbuddy is available as a docker container. See the [Scanbuddy ghcr.io] (https://github.com/harvard-nrg/scanbuddy/pkgs/container/scanbuddy) page and the [Scanbuddy Read the Docs] (https://scanbuddy.readthedocs.io/en/latest/user_docs.html). 
 
 # Contributing to Scanbuddy
 
