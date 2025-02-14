@@ -18,6 +18,4 @@ Scanbuddy is an fMRI motion plotting software that allows users to see motion es
 Indices and tables
 ==================
 
-* :ref:`genindex`
-* :ref:`modindex`
 * :ref:`search`
