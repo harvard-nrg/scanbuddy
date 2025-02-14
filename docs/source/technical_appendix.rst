@@ -1,4 +1,4 @@
-.. _dc2mniix: https://www.nitrc.org/plugins/mwiki/index.php/dcm2nii:MainPage
+.. _dcm2niix: https://www.nitrc.org/plugins/mwiki/index.php/dcm2nii:MainPage
 .. _3dvolreg: https://afni.nimh.nih.gov/pub/dist/doc/program_help/3dvolreg.html
 
 Technical Appendix
