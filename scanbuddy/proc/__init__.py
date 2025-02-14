@@ -18,8 +18,9 @@ from scanbuddy.proc.snr import SNR
 logger = logging.getLogger(__name__)
 
 class Processor:
-    def __init__(self):
+    def __init__(self, debug_display=False):
         self.reset()
+        self._debug_display = debug_display
         pub.subscribe(self.reset, 'reset')
         pub.subscribe(self.listener, 'incoming')
 
@@ -84,7 +85,11 @@ class Processor:
         scandesc = ds.get('SeriesDescription', '[SERIES]')
         scannum = ds.get('SeriesNumber', '[NUMBER]')
         subtitle_string = f'{project} • {session} • {scandesc} • {scannum}'
-        pub.sendMessage('plot', instances=self._instances, subtitle_string=subtitle_string)
+        num_vols = ds[(0x0020, 0x0105)].value
+        if self._debug_display:
+            pub.sendMessage('plot', instances=self._instances, subtitle_string=subtitle_string)
+        elif num_vols == key:
+            pub.sendMessage('plot', instances=self._instances, subtitle_string=subtitle_string)
 
         snr_tasks = self.check_snr(key)
         #logger.info(f'snr task sorted dict: {snr_tasks}')
@@ -162,7 +167,10 @@ class Processor:
             logger.info(f'new threshold: {self._mask_threshold}')
             self._slice_intensity_means = np.zeros( (self._z, self._num_vols) )
         else:
-            pub.sendMessage('plot_snr', snr_metric=snr_metric) 
+            if self._debug_display:
+                pub.sendMessage('plot_snr', snr_metric=snr_metric) 
+            elif key >= (self._num_vols - 6):
+                pub.sendMessage('plot_snr', snr_metric=snr_metric) 
 
     def check_volreg(self, key):
         tasks = list()

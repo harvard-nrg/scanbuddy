@@ -23,6 +23,7 @@ def main():
     parser = ArgumentParser()
     parser.add_argument('-m', '--mock', action='store_true')
     parser.add_argument('-c', '--config', required=True, type=Path)
+    parser.add_argument('--debug-display', action='store_true')
     parser.add_argument('--host', type=str, default='127.0.0.1')
     parser.add_argument('--port', type=int, default=8080)
     parser.add_argument('--folder', type=Path, required=True)
@@ -37,7 +38,7 @@ def main():
 
     broker = MessageBroker()
     watcher = DirectoryWatcher(args.folder)
-    processor = Processor()
+    processor = Processor(args.debug_display)
     params = Params(
         broker=broker,
         config=config
