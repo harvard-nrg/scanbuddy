@@ -17,7 +17,7 @@ Scanbuddy also provides an estimate of the Signal-to-Noise Ratio (SNR) with the 
 
 What You Will Need
 ^^^^^^^^^^^^^^^^^^
-Scanbuddy should be run on a standalone machine (separate from the scanner host PC) that runs Linux and you have sudo privileges. We've used several distributions of Linux in development (ubuntu, debian, asahi) and all have run Scanbuddy successfully. Scanbuddy may work on MacOS and/or Windows, though it has not been tested by the developers. The Scanbuddy machine should have 16 GB of RAM if possible; it may still work with less memory depending on the size of the data being acquired. The machine should be capable of running a web browser and Docker. You will also need a monitor to connect to the machine to display the motion plots.
+Scanbuddy should be run on a standalone machine (separate from the scanner host PC) that runs Linux and you have sudo privileges. We've used several distributions of Linux in development (ubuntu, debian, asahi) and all have run Scanbuddy successfully. The Scanbuddy machine should have 16 GB of RAM if possible; it may still work with less memory depending on the size of the data being acquired. The machine should be capable of running a web browser and Docker. You will also need a monitor to connect to the machine to display the motion plots.
 
 .. note::
      Take a look at installing Docker on Linux `here <https://docs.docker.com/engine/install/>`_.
@@ -48,11 +48,17 @@ If you are using SE Linux, you will need to make sure this directory is accessib
 
 Check ``/var/log/audit/audit.log`` for any Samba denial messages. You may not see any messages until the scanner attempts to mount the drive.
 
-You will also need to create a Samba password. Samba uses its own password database for authentication. The password you choose for Samba may be different from the user's system password. Adding a new Samba user should automatically enable the user, but it's still a good idea to make sure the user is enabled with ``smbpasswd -e username``
+You will also need to create a Samba password. Samba uses its own password database for authentication. The password you choose for Samba may be different from the user's system password.
 
 .. code-block:: shell
 
       sudo smbpasswd -a username
+
+Adding a new Samba user should automatically enable the user, but it's still a good idea to make sure the user is enabled with:
+
+.. code-block:: shell
+
+      smbpasswd -e username
 
 Configure Samba
 """""""""""""""
@@ -150,6 +156,9 @@ Running Scanbuddy
 With the plugin and Samba configured and the container built, we're ready to run Scanbuddy! 
 
 The first thing to do is set a few environment variables inside of your shell for Scanbuddy: ``SCANBUDDY_PASS`` and ``SCANBUDDY_SESSION_KEY``
+
+.. note::
+     ``SCANBUDDY_PASS`` and ``SCANBUDDY_SESSION_KEY`` are security details, so they should be set as something secure, particularly if the Scanbuddy display is ever shared beyond localhost.
 
 You can make this whatever you want (I would recommend a string) inside of your ``~/.bashrc`` file:
 
