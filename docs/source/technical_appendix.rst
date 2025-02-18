@@ -24,3 +24,4 @@ Scanbuddy's SNR calculation is slice based. It uses coil element information ava
 And voilà! We have an SNR estimate. Scanbuddy starts calculating SNR volume around volume 60, though it may differ depending on the headcoil being used. Scanbuddy will calculate SNR every four volumes after it's initial calculation. We optimized the calculation by having Scanbuddy only recalculate weighted slice means in slices where the estimated mask has changed.
 
 Please direct any additional questions to info@neuroinfo.org
+

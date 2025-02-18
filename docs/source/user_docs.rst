@@ -214,10 +214,30 @@ Keep an eye on the Docker logs for any issues/errors. You can get the Scanbuddy 
 
 Replace CONTAINER_ID with the ID of your Scanbuddy container (they are all unique).
 
+All Arguments
+"""""""""""""
+===================== ========================================== ========
+Argument              Description                                Required
+===================== ========================================== ========
+``-d``                Tells Docker to run detached from terminal No
+``-e``                Pass environmental variables to Docker     Yes
+``--user``            Docker user id                             Yes
+``--network``         Tell Docker which network to use           Yes
+``-v``                Mount the volume where data will land      Yes
+``--folder``          Where to tell Scanbuddy to watch for data  Yes
+``--config``          Path to Scanbuddy config file              Yes
+``--host``            IP for web display. 127.0.0.1 is default   No
+``--port``            Web display port number. Default is 8080   No
+``--debug-display``   See plot dynamically update for debugging  No
+===================== ========================================== ========
+
+.. note::
+    The order of the arguments matters. The first 5 arguments are for Docker and all following arguments are for Scanbuddy. Out of order arguments will cause problems!
+
 Expected Output
 ^^^^^^^^^^^^^^^
 
-Open up your favorite web browser and put ``http://127.0.0.1:8080`` in the url field. You should see an empty plot:
+Open up your favorite web browser and put ``127.0.0.1:8080`` in the url field. You should see an empty plot:
 
 .. image:: images/start_browser.png
 
