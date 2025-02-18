@@ -224,7 +224,7 @@ Argument              Description                                Required
 ``--user``            Docker user id                             Yes
 ``--network``         Tell Docker which network to use           Yes
 ``-v``                Mount the volume where data will land      Yes
-``--folder``          Where to tell Scanbuddy to watch for data  Yes
+``--folder``          Tell Scanbuddy where to watch for data     Yes
 ``--config``          Path to Scanbuddy config file              Yes
 ``--host``            IP for web display. 127.0.0.1 is default   No
 ``--port``            Web display port number. Default is 8080   No
