@@ -77,9 +77,15 @@ Add the following to the end of ``/etc/samba/smb.conf``
 
 Save the above file and restart Samba:
 
-.. code-block:: yaml
+.. code-block:: shell
 
      sudo service smbd restart
+
+If that doesn't work, try:
+
+.. code-block:: shell
+
+     sudo service smb restart
 
 Your Samba share should be up and running now!
 
