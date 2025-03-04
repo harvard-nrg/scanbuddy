@@ -8,7 +8,7 @@ Whenever a DICOM from a new series is seen, all data from the previous series is
 
 # Installation and Usage
 
-Scanbuddy is available as a docker container. See the [Scanbuddy Documentation](https://scanbuddy.readthedocs.io/en/latest) for further details. 
+Scanbuddy is available as a docker container. See the [Scanbuddy Documentation](https://scanbuddy.readthedocs.io/en/main/) for further details. 
 
 # Contributing to Scanbuddy
 
