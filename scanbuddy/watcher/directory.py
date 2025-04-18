@@ -8,9 +8,9 @@ from scanbuddy.watcher.dicom import DicomWatcher
 logger = logging.getLogger(__name__)
 
 class DirectoryWatcher:
-    def __init__(self, directory):
+    def __init__(self, directory, interval=1):
         self._directory = directory
-        self._observer = PollingObserver(timeout=1)
+        self._observer = PollingObserver(timeout=interval)
         self._observer.schedule(
             DirectoryHandler(),
             directory
