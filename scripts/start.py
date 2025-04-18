@@ -36,14 +36,20 @@ def main():
 
     config = Config(args.config)
 
-    broker = MessageBroker()
-    watcher = DirectoryWatcher(args.folder)
-    processor = Processor(args.debug_display)
-    params = Params(
-        broker=broker,
-        config=config
-    )
-    volreg = VolReg(mock=args.mock)
+    for name,item in iter(config['types'].items()):
+        interval = item['interval']
+        d = args.folder / name
+        watcher = DirectoryWatcher(d, interval=interval)
+        processor = Processor(args.debug_display)
+        params = Params(
+            ...
+        )
+        if name == 'bold':
+            volreg = VolReg(
+                ...
+            )
+        watcher.start()
+
     view = View(
         host=args.host,
         port=args.port,
@@ -61,7 +67,6 @@ def main():
     logging.getLogger('werkzeug').setLevel(logging.ERROR)
 
     # start the watcher and view
-    watcher.start()
     view.forever()
 
 if __name__ == '__main__':
