@@ -8,22 +8,43 @@ app:
         user: scanbuddy
         pass:
             env: SCANBUDDY_PASS
-params:
-    coil_elements:
-        bad:
-            - receive_coil: Head_32
-              coil_elements:  HEA
-            - receive_coil: Head_32
-              coil_elements: HEP
-        message: |
-            Session: {SESSION}
-            Series: {SERIES}
-            Coil: {RECEIVE_COIL}, {COIL_ELEMENTS}
-            
-            Detected an issue with head coil elements.
-
-            1. Check head coil connection for debris or other obstructions.
-            2. Reconnect head coil securely.
-            3. Ensure that anterior and posterior coil elements are present.
-
-            Call 867-5309 for further assistance.
+types:
+    bold:
+        frequency: .5
+        params:
+            coil_elements:
+                bad:
+                    - receive_coil: Head_32
+                      coil_elements:  HEA
+                    - receive_coil: Head_32
+                      coil_elements: HEP
+                message: |
+                    Session: {SESSION}
+                    Series: {SERIES}
+                    Coil: {RECEIVE_COIL}, {COIL_ELEMENTS}
+                    
+                    Detected an issue with head coil elements.
+        
+                    1. Check head coil connection for debris or other obstructions.
+                    2. Reconnect head coil securely.
+                    3. Ensure that anterior and posterior coil elements are present.
+        
+                    Call 867-5309 for further assistance.
+    localizer:
+        frequency: 1
+        params:
+            table_pos:
+                bad:
+                    - table_postition: -1250
+                message: |
+                    Session: {SESSION}
+                    Series: {SERIES}
+                    Coil: {RECEIVE_COIL}, {COIL_ELEMENTS}
+                    
+                    Detected an issue with head coil elements.
+        
+                    1. Check head coil connection for debris or other obstructions.
+                    2. Reconnect head coil securely.
+                    3. Ensure that anterior and posterior coil elements are present.
+        
+                    Call 867-5309 for further assistance.
