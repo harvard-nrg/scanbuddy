@@ -27,3 +27,18 @@ params:
             3. Ensure that anterior and posterior coil elements are present.
 
             Call 867-5309 for further assistance.
+
+    table_position:
+        bad:
+            - receive_coil: Head_32
+              table_position  : -1250
+        message: |
+            Session: {SESSION}
+            Series: {SERIES}
+            Table Position: {TABLE_POSITION}
+
+            Detected an issue with the table position.
+
+            1. Verify that the table is at the correct height.
+            2. Re-align with laser.
+            3. Recapture previous scans from this session.
