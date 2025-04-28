@@ -31,7 +31,7 @@ params:
     table_position:
         bad:
             - receive_coil: Head_32
-              table_position: -1250
+              table_position  : -1250
         message: |
             Session: {SESSION}
             Series: {SERIES}
@@ -41,4 +41,4 @@ params:
 
             1. Verify that the table is at the correct height.
             2. Re-align with laser.
-            3. Start BOLD scan over.
+            3. Recapture previous scans from this session.
