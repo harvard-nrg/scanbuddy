@@ -58,7 +58,7 @@ class Params:
         self._table_checked = True
         patient_name = ds.get('PatientName', 'UNKNOWN PATIENT')
         series_number = ds.get('SeriesNumber', 'UNKNOWN SERIES')
-        logger.info(f'instance number: {ds.get('InstanceNumber', 'UNKNOWN INSTANCE')}')
+        logger.info(f"instance number: {ds.get('InstanceNumber', 'UNKNOWN INSTANCE')}")
         table_position = self.find_table_position(ds)
         receive_coil = self.findcoil(ds)
         message = args['message'].format(
