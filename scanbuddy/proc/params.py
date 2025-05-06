@@ -24,6 +24,10 @@ class Params:
         if self._table_checked:
             logger.info(f'already checked table table position from {ds.SeriesNumber}')
             return
+        instance_number = ds.get('InstanceNumber', 'UNKNOWN INSTANCE')
+        if instance_number <= 5:
+            logger.info(f'waiting to check parameters until after 5th volume')
+            return
         for item in self._config:
             args = self._config[item]
             f = getattr(self, item)
