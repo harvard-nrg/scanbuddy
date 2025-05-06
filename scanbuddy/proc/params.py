@@ -15,18 +15,18 @@ class Params:
         pub.subscribe(self.reset, 'reset')
 
     def reset(self):
-        self._checked = False
+        self._coil_checked = False
+        self._table_checked = False
 
     def listener(self, ds):
+        series_number = ds.get('SeriesNumber', 'UNKNOWN SERIES')
+        instance_number = ds.get('InstanceNumber', 'UNKNOWN INSTANCE')
+        logger.info(f'params listener fired for series={series_number}, instance={instance_number}')
         if self._coil_checked:
-            logger.info(f'already checked coil from series {ds.SeriesNumber}')
+            logger.info(f'already checked coil from series={series_number}')
             return
         if self._table_checked:
-            logger.info(f'already checked table table position from {ds.SeriesNumber}')
-            return
-        instance_number = ds.get('InstanceNumber', 'UNKNOWN INSTANCE')
-        if instance_number <= 5:
-            logger.info(f'waiting to check parameters until after 5th volume')
+            logger.info(f'already checked table table position from series={series_number}')
             return
         for item in self._config:
             args = self._config[item]
@@ -34,11 +34,11 @@ class Params:
             f(ds, args)
 
     def coil_elements(self, ds, args):
-        logger.info('inside coil_elements method')
-        self._coil_checked = True
         patient_name = ds.get('PatientName', 'UNKNOWN PATIENT')
         series_number = ds.get('SeriesNumber', 'UNKNOWN SERIES')
-        logger.info(f"instance number: {ds.get('InstanceNumber', 'UNKNOWN INSTANCE')}")
+        instance_number = ds.get('InstanceNumber', 'UNKNOWN INSTANCE')
+        logger.info(f'checking coil elements for series={series_number}, instance={instance_number}')
+        self._coil_checked = True
         receive_coil = self.findcoil(ds)
         coil_elements = self.findcoilelements(ds)
         message = args['message'].format(
@@ -58,11 +58,11 @@ class Params:
                 break
 
     def table_position(self, ds, args):
-        logger.info('inside table_position method')
-        self._table_checked = True
         patient_name = ds.get('PatientName', 'UNKNOWN PATIENT')
         series_number = ds.get('SeriesNumber', 'UNKNOWN SERIES')
-        logger.info(f"instance number: {ds.get('InstanceNumber', 'UNKNOWN INSTANCE')}")
+        instance_number = ds.get('InstanceNUmber', 'UNKNOWN INSTANCE')
+        logger.info(f'checking table position for series={series_number}, instance={instance_number}')
+        self._table_checked = True
         table_position = self.find_table_position(ds)
         receive_coil = self.findcoil(ds)
         message = args['message'].format(
@@ -80,12 +80,10 @@ class Params:
                 self._broker.publish('scanbuddy_messages', message)
                 break
 
-
     def find_table_position(self, ds):
         seq = ds[(0x5200, 0x9230)][0]
         seq = seq[(0x0021, 0x11fe)][0]
         return seq[(0x0021, 0x1145)].value[-1]
-
 
     def findcoil(self, ds):
         seq = ds[(0x5200, 0x9229)][0]
