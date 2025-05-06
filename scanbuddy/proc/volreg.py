@@ -2,13 +2,15 @@ import os
 import glob
 import json
 import time
-import logging
 import random
 import pydicom
+import logging
 import subprocess
 import numpy as np
 from pubsub import pub
+from retry import retry
 from pathlib import Path
+from subprocess import CalledProcessError
 
 logger = logging.getLogger(__name__)
 
@@ -87,7 +89,7 @@ class VolReg:
     def insert_array(self, arr, task_idx):
         self.tasks[task_idx][0]['volreg'] = arr
 
-
+    @retry((CalledProcessError), delay=.1, max_delay=1.0, tries=5)
     def run_dcm2niix(self, dicom, num):
 
         self.out_dir = os.sep.join(dicom.split(os.sep)[:-1])

@@ -22,6 +22,8 @@ services:
     restart: unless-stopped
     expose:
       - "6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
 
   scanbuddy-nginx:
     image: nginx:${NGINX_VERSION}
@@ -36,5 +38,25 @@ services:
       no_proxy: "scanbuddy-web"
     depends_on:
       - scanbuddy-web
-    links:
-      - scanbuddy-web
+
+  samba:
+    image: ghcr.io/servercontainers/samba:${SAMBA_VERSION}
+    restart: unless-stopped
+    ports:
+      - "445:445"
+    expose:
+      - "445"
+    environment:
+      SAMBA_CONF_LOG_LEVEL: 3
+      WSDD2_DISABLE: 1
+      AVAHI_DISABLE: 1
+      NETBIOS_DISABLE: 1
+      GROUP_fakegroup: 20
+      ACCOUNT_scanbuddy: ${SAMBA_PASS}
+      UID_scanbuddy: 501
+      GROUPS_scanbuddy: fakegroup
+      SAMBA_VOLUME_CONFIG_scanbuddy: "[scanbuddy]; path=/data; valid users = scanbuddy; guest ok = no; read only = no; browseable = yes"
+    volumes:
+      - ${INCOMING_DIR}:/data
+    profiles: [samba]
+
