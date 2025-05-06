@@ -62,6 +62,7 @@ class DicomHandler(PatternMatchingEventHandler):
         except InvalidDicomError as e:
             logger.info(f'not a dicom file {path}')
         except FileNotFoundError as e:
+            logger.warning(f'file not found: {e}')
             pass
         except Exception as e:
             logger.info(f'An unexpected error occurred: {e}')
