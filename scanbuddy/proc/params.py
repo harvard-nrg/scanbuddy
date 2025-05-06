@@ -33,7 +33,7 @@ class Params:
         self._coil_checked = True
         patient_name = ds.get('PatientName', 'UNKNOWN PATIENT')
         series_number = ds.get('SeriesNumber', 'UNKNOWN SERIES')
-        logger.info(f'instance number: {ds.get('InstanceNumber', 'UNKNOWN INSTANCE')}')
+        logger.info(f"instance number: {ds.get('InstanceNumber', 'UNKNOWN INSTANCE')}")
         receive_coil = self.findcoil(ds)
         coil_elements = self.findcoilelements(ds)
         message = args['message'].format(
