@@ -54,8 +54,6 @@ class VolReg:
 
             arr = self.run_volreg(nii1, nii2, self.out_dir)
 
-            #self.clean_dir(nii1, nii2, self.out_dir)
-
             logger.info(f'volreg array from registering volume {self._dcm2_instance_num} to volume {self._dcm1_instance_num}: {arr}')
 
             self.insert_array(arr, task_idx)
@@ -71,14 +69,12 @@ class VolReg:
     def create_niis(self, task_idx):
         
         dcm1 = self.tasks[task_idx][1]['path']
-        #nii1 = self.run_dcm2niix(dcm1, 1)
         self._dcm1_instance_num = int(pydicom.dcmread(dcm1, force=True, stop_before_pixels=True).InstanceNumber)
         nii1 = self.run_dcm2niix(dcm1, self._dcm1_instance_num)
         if self.tasks[task_idx][1]['nii_path'] is None:
             self.tasks[task_idx][1]['nii_path'] = nii1
 
         dcm2 = self.tasks[task_idx][0]['path']
-        #nii2 = self.run_dcm2niix(dcm2, 2)
         self._dcm2_instance_num = int(pydicom.dcmread(dcm2, force=True, stop_before_pixels=True).InstanceNumber)
         nii2 = self.run_dcm2niix(dcm2, self._dcm2_instance_num)
         if self.tasks[task_idx][0]['nii_path'] is None:
@@ -97,14 +93,13 @@ class VolReg:
         dcm2niix_cmd = [
            'dcm2niix',
            '-b', 'y',
-           #'-z', 'y',
            '-s', 'y',
            '-f', f'bold_{num}',
            '-o', self.out_dir,
            dicom
         ]
         cmdstr = json.dumps(dcm2niix_cmd, indent=2)
-        #logger.info(f'running {cmdstr}')
+        logger.debug(f'running {cmdstr}')
 
         output = subprocess.check_output(dcm2niix_cmd, stderr=subprocess.STDOUT)
 
@@ -122,7 +117,6 @@ class VolReg:
             '-base', nii_1,
             '-linear',
             '-1Dfile', mocopar,
-            #'-maxdisp1D', maxdisp,
             '-x_thresh', '10',
             '-rot_thresh', '10',
             '-nomaxdisp',
@@ -146,14 +140,9 @@ class VolReg:
             return False
 
     def clean_dir(self, nii_1, nii_2, outdir):
-        #os.remove(nii_1)
-        #os.remove(nii_2)
-        #os.remove(f'{outdir}/maxdisp_delt')
-        #os.remove(f'{outdir}/maxdisp')
         os.remove(f'{outdir}/moco.par')
         for file in glob.glob(f'{outdir}/*.json'):
             os.remove(file)
-        #for file in glob.glob(f'{outdir}/*.nii.gz'):
         for file in glob.glob(f'{outdir}/*.nii'):
             os.remove(file)
 
