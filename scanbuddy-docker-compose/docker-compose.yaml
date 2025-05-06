@@ -1,0 +1,40 @@
+services:
+  scanbuddy-web:
+    image: ghcr.io/harvard-nrg/scanbuddy:${SCANBUDDY_VERSION}
+    restart: unless-stopped
+    depends_on:
+      - scanbuddy-redis
+    environment:
+      SCANBUDDY_PASS: ${SCANBUDDY_PASS}
+      SCANBUDDY_SESSION_KEY: ${SCANBUDDY_SESSION_KEY}
+    user: ${UID}:${GID}
+    expose:
+      - "8080"
+    volumes:
+      - ${INCOMING_DIR}:/data
+      - ${CONFIG}:/etc/scanbuddy.yaml
+    mem_limit: ${MEM_LIMIT}
+    memswap_limit: ${MEM_SWAP_LIMIT}
+    command: ["-c", "/etc/scanbuddy.yaml", "--folder", "/data", "--host", "0.0.0.0", "--port", "8080"]
+
+  scanbuddy-redis:
+    image: redis:${REDIS_VERSION}
+    restart: unless-stopped
+    expose:
+      - "6379"
+
+  scanbuddy-nginx:
+    image: nginx:${NGINX_VERSION}
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/logs:/var/log/nginx
+    ports:
+      - "80:80"
+    expose:
+      - "80"
+    environment:
+      no_proxy: "scanbuddy-web"
+    depends_on:
+      - scanbuddy-web
+    links:
+      - scanbuddy-web

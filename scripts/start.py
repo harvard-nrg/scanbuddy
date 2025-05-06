@@ -36,7 +36,9 @@ def main():
 
     config = Config(args.config)
 
-    broker = MessageBroker()
+    broker = MessageBroker(
+        config=config
+    )
     watcher = DirectoryWatcher(args.folder)
     processor = Processor(args.debug_display)
     params = Params(
