@@ -1,0 +1,5 @@
+services:
+  scanbuddy-web:
+    volumes:
+      - ../scripts/start.py:/sw/miniforge/envs/python3.13t/bin/start.py
+      - ../scanbuddy:/sw/miniforge/envs/python3.13t/lib/python3.13t/site-packages/scanbuddy
