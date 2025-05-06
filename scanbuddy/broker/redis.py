@@ -6,20 +6,27 @@ import redis.exceptions
 logger = logging.getLogger(__name__)
 
 class MessageBroker:
-    def __init__(self, config, host='localhost', port=6379):
+    def __init__(self, config, host='127.0.0.1', port=6379, debug=False):
         self._config = config
-        self._host = self._config.find_one('$.broker.host', default=host)
-        self._port = self._config.find_one('$.broker.port', default=port)
+        self.host = self._config.find_one('$.broker.host', default=host)
+        self.port = self._config.find_one('$.broker.port', default=port)
+        self._debug = self._config.find_one('$.app.debug', default=debug)
         self._conn = None
-        self._uri = f'redis://{self._host}:{self._port}'
+        self._uri = f'redis://{self.host}:{self.port}'
         self.connect()
 
     def connect(self):
         self._conn = redis.Redis(
-            host=self._host,
-            port=self._port,
+            host=self.host,
+            port=self.port,
             decode_responses=True
         )
+
+    def get(self, key):
+        self._conn.get(key)
+
+    def delete(self, key):
+        self._conn.delete(key)
 
     def publish(self, topic, message):
         try:

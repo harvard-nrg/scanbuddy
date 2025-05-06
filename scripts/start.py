@@ -24,8 +24,10 @@ def main():
     parser.add_argument('-m', '--mock', action='store_true')
     parser.add_argument('-c', '--config', required=True, type=Path)
     parser.add_argument('--debug-display', action='store_true')
-    parser.add_argument('--host', type=str, default='127.0.0.1')
-    parser.add_argument('--port', type=int, default=8080)
+    parser.add_argument('--host', type=str)
+    parser.add_argument('--port', type=int)
+    parser.add_argument('--broker-host', type=str)
+    parser.add_argument('--broker-port', type=int)
     parser.add_argument('--folder', type=Path, required=True)
     parser.add_argument('--snr-interval', default=10, 
         help='Every N volumes snr should be calculated')
@@ -35,20 +37,29 @@ def main():
     print_platform_info()
 
     config = Config(args.config)
+    if args.host:
+        config.update_or_create('$.app.host', args.host)
+    if args.port:
+        config.update_or_create('$.app.port', args.port)
+    if args.broker_host:
+        config.update_or_create('$.broker.host', args.broker_host)
+    if args.broker_port:
+        config.update_or_create('$.broker.port', args.broker_port)
 
     broker = MessageBroker(
-        config=config
+        config=config,
+        debug=args.verbose
     )
     watcher = DirectoryWatcher(args.folder)
     processor = Processor(args.debug_display)
     params = Params(
         broker=broker,
-        config=config
+        config=config,
+        debug=args.verbose
     )
     volreg = VolReg(mock=args.mock)
     view = View(
-        host=args.host,
-        port=args.port,
+        broker=broker,
         config=config,
         debug=args.verbose
     )

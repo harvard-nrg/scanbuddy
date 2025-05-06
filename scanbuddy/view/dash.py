@@ -25,7 +25,8 @@ ERROR_ART = """
 DEFAULT_MESSAGE = 'Hello, World!'
 
 class View:
-    def __init__(self, host='127.0.0.1', port=8080, config=None, debug=False):
+    def __init__(self, broker, host='127.0.0.1', port=8080, config=None, debug=False):
+        self._broker = broker
         self._config = config
         self._host = self._config.find_one('$.app.host', default=host)
         self._port = self._config.find_one('$.app.port', default=port)
@@ -36,8 +37,8 @@ class View:
         self._instances = dict()
         self._current_snr = 0.0
         self._redis_client = redis.StrictRedis(
-            host=self._config.find_one('$.broker.host', default='127.0.0.1'),
-            port=self._config.find_one('$.broker.port', default=6379),
+            host=broker.host,
+            port=broker.port,
             db=0
         )
         self.init_app()
