@@ -13,6 +13,10 @@ class Config:
         with open(self._file) as fo:
             self._config = yaml.safe_load(fo)
         
+    def update_or_create(self, key, value):
+        jp = parse(key)
+        jp.update_or_create(self._config, value)
+
     def find_one(self, expr, default=None):
         jsonpath = parse(expr)
         match = jsonpath.find(self._config)  

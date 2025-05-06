@@ -13,8 +13,9 @@ from pathlib import Path
 logger = logging.getLogger(__name__)
 
 class VolReg:
-    def __init__(self, mock=False):
+    def __init__(self, mock=False, debug=False):
         self._mock = mock
+        self._debug = debug
         self._dcm1_instance_num = None
         self._dcm2_instance_num = None
         pub.subscribe(self.listener, 'volreg')

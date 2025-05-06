@@ -3,7 +3,7 @@ services:
     image: ghcr.io/harvard-nrg/scanbuddy:${SCANBUDDY_VERSION}
     restart: unless-stopped
     depends_on:
-      - scanbuddy-redis
+      - scanbuddy-broker
     environment:
       SCANBUDDY_PASS: ${SCANBUDDY_PASS}
       SCANBUDDY_SESSION_KEY: ${SCANBUDDY_SESSION_KEY}
@@ -15,9 +15,9 @@ services:
       - ${CONFIG}:/etc/scanbuddy.yaml
     mem_limit: ${MEM_LIMIT}
     memswap_limit: ${MEM_SWAP_LIMIT}
-    command: ["-c", "/etc/scanbuddy.yaml", "--folder", "/data", "--host", "0.0.0.0", "--port", "8080"]
+    command: ["-c", "/etc/scanbuddy.yaml", "--folder", "/data", "--host", "0.0.0.0", "--broker-host", "scanbuddy-broker"]
 
-  scanbuddy-redis:
+  scanbuddy-broker:
     image: redis:${REDIS_VERSION}
     restart: unless-stopped
     expose:
