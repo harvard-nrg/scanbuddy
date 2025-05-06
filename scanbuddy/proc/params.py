@@ -29,9 +29,11 @@ class Params:
             f(ds, args)
 
     def coil_elements(self, ds, args):
+        logger.info('inside coil_elements method')
         self._coil_checked = True
         patient_name = ds.get('PatientName', 'UNKNOWN PATIENT')
         series_number = ds.get('SeriesNumber', 'UNKNOWN SERIES')
+        logger.info(f'instance number: {ds.get('InstanceNumber', 'UNKNOWN INSTANCE')}')
         receive_coil = self.findcoil(ds)
         coil_elements = self.findcoilelements(ds)
         message = args['message'].format(
@@ -51,9 +53,11 @@ class Params:
                 break
 
     def table_position(self, ds, args):
+        logger.info('inside table_position method')
         self._table_checked = True
         patient_name = ds.get('PatientName', 'UNKNOWN PATIENT')
         series_number = ds.get('SeriesNumber', 'UNKNOWN SERIES')
+        logger.info(f'instance number: {ds.get('InstanceNumber', 'UNKNOWN INSTANCE')}')
         table_position = self.find_table_position(ds)
         receive_coil = self.findcoil(ds)
         message = args['message'].format(
