@@ -24,16 +24,16 @@ class DirectoryWatcher:
         self._observer.join()
 
 class DirectoryHandler(FileSystemEventHandler):
-	def __init__(self, *args, **kwargs):
-		self._dicomwatcher = None
-		super().__init__(*args, **kwargs)
+    def __init__(self, *args, **kwargs):
+        self._dicomwatcher = None
+        super().__init__(*args, **kwargs)
 
-	def on_created(self, event):
-		if event.is_directory:
-			logger.debug(f'on_created fired on {event.src_path}')
-			if self._dicomwatcher:
-				self._dicomwatcher.stop()
-			self._dicomwatcher = DicomWatcher(Path(event.src_path))
-			self._dicomwatcher.start()
-
+    def on_created(self, event):
+        if event.is_directory:
+            logger.info(f'on_created fired on {event.src_path}')
+            if self._dicomwatcher:
+                logger.info('calling stop on dicomwatcher')
+                self._dicomwatcher.stop()
+            self._dicomwatcher = DicomWatcher(Path(event.src_path))
+            self._dicomwatcher.start()
 

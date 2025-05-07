@@ -7,6 +7,7 @@ import pydicom
 from pubsub import pub
 from retry import retry
 from pathlib import Path
+from datetime import datetime
 from pydicom.errors import InvalidDicomError
 from watchdog.observers.polling import PollingObserver
 from watchdog.events import PatternMatchingEventHandler
@@ -16,6 +17,7 @@ logger = logging.getLogger(__name__)
 class DicomWatcher:
     def __init__(self, directory):
         self._directory = directory
+        self._inode = None
         self._observer = PollingObserver(timeout=.01)
         self._observer.schedule(
             DicomHandler(ignore_directories=True),
@@ -24,7 +26,7 @@ class DicomWatcher:
 
     def start(self):
         logger.info(f'starting dicom watcher on {self._directory}')
-        self._directory.mkdir(parents=True, exist_ok=True)
+        self._inode = os.stat(self._directory).st_ino
         self._observer.start()
 
     def join(self):
@@ -33,14 +35,19 @@ class DicomWatcher:
     def stop(self):
         logger.info(f'stopping dicom watcher on {self._directory}')
         self._observer.stop()
-        logger.info(f'removing {self._directory}')
-        try:
-            shutil.rmtree(self._directory)
-            pub.sendMessage('reset')
-        except FileNotFoundError:
-            logger.info(f'{self._directory} does not exist, moving on')
-            pub.sendMessage('reset')
-            pass
+        # check if this the same directory
+        inode = os.stat(self._directory).st_ino
+        if inode == self._inode:
+            try:
+                logger.info(f'removing {self._directory}')
+                shutil.rmtree(self._directory)
+                logger.info(f'successfully removed {self._directory}')
+            except FileNotFoundError:
+                logger.info(f'{self._directory} does not exist, moving on')
+                pass
+        else:
+            logger.info(f'not going to remove new directory with the same name {self._directory}')
+        pub.sendMessage('reset')
 
 class DicomHandler(PatternMatchingEventHandler):
     def on_created(self, event):
@@ -85,14 +92,17 @@ class DicomHandler(PatternMatchingEventHandler):
         return pydicom.dcmread(dicom, stop_before_pixels=False)
 
     def check_series(self, ds, old_path):
+        series_number = ds.get('SeriesNumber', 'UNKNOWN SERIES')
+        instance_number = ds.get('InstanceNumber', 'UNKNOWN INSTANCE')
+        series_uid = ds.get('SeriesInstanceUID', 'UNKNOWN SERIES UID')
         if not hasattr(self, 'first_dcm_series'):
-            logger.info(f'found first series instance uid {ds.SeriesInstanceUID}')
+            logger.info(f'found first series instance uid {series_uid} (series={series_number}, instance={instance_number})')
             self.first_dcm_series = ds.SeriesInstanceUID
             self.first_dcm_study = ds.StudyInstanceUID
             return
 
-        if self.first_dcm_series != ds.SeriesInstanceUID:
-            logger.info(f'found new series instance uid: {ds.SeriesInstanceUID}')
+        if self.first_dcm_series != series_uid:
+            logger.info(f'found new series instance uid {series_uid} (series={series_number}, instance={instance_number})')
             self.trigger_reset(ds, old_path)
             self.first_dcm_series = ds.SeriesInstanceUID
             self.first_dcm_study = ds.StudyInstanceUID
