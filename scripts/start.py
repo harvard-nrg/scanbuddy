@@ -3,7 +3,6 @@
 import sys
 import time
 import logging
-import warnings
 from pubsub import pub
 from pathlib import Path
 from scanbuddy.proc.snr import SNR
@@ -18,8 +17,6 @@ from scanbuddy.common import print_platform_info
 from scanbuddy.watcher.directory import DirectoryWatcher
 
 logger = logging.getLogger('main')
-logging.captureWarnings(True)
-warnings.filterwarnings("ignore", category=DeprecationWarning)
 logging.basicConfig(level=logging.INFO)
 
 def main():

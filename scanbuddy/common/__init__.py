@@ -1,3 +1,4 @@
+import os
 import sys
 import platform
 from tabulate import tabulate
@@ -5,7 +6,7 @@ from tabulate import tabulate
 def print_platform_info():
     table = [
         ['Platform', platform.platform()],
-        ['Processor', platform.processor()],
+        ['CPU Arch', platform.processor()],
         ['Python version', platform.python_version()],
         ['GIL enabled', sys._is_gil_enabled()]
     ]
