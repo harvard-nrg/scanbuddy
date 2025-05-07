@@ -28,6 +28,7 @@ class Processor:
     def reset(self):
         self._instances = SortedDict()
         self._slice_means = SortedDict()
+        self.make_arrays_zero()
         pub.sendMessage('plot_snr', snr_metric=str(0.0))
         logger.debug('received message to reset')
 
@@ -154,7 +155,8 @@ class Processor:
             logger.info(f'dangling files: {files}')
             logger.info(f'removing {len(os.listdir(path_obj.parent.absolute())) - 1} dangling files')
             shutil.rmtree(data_path)
-        
+            self.make_arrays_zero()
+
 
     def calculate_and_publish_snr(self, key):
         start = time.time()
@@ -402,4 +404,9 @@ class Processor:
             pass
 
         return tasks
+
+    def make_arrays_zero(self):
+        self._fdata_array = None
+        self._slice_intensity_means = None
+        self._slice_means = None
 
