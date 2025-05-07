@@ -35,7 +35,8 @@ params:
 
     table_position:
         bad:
-            - table_position: -1250
+            - receive_coil: Head_32
+              table_position: -1250
         message: |
             Session: {SESSION}
             Series: {SERIES}

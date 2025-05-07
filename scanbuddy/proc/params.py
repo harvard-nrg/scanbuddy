@@ -64,14 +64,15 @@ class Params:
         logger.info(f'checking table position for series={series_number}, instance={instance_number}')
         self._table_checked = True
         table_position = self.find_table_position(ds)
+        receive_coil = self.findcoil(ds)
         message = args['message'].format(
             SESSION=patient_name,
             SERIES=series_number,
             TABLE_POSITION=table_position,
         )
         for bad in args['bad']:
-            a = table_position
-            b = bad['table_position']
+            a = (receive_coil, table_position)
+            b = (bad['receive_coil'], bad['table_position'])
             logger.info(f'checking if {a} == {b}')
             if a == b:
                 logger.warning(message)
