@@ -18,9 +18,10 @@ from scanbuddy.proc.snr import SNR
 logger = logging.getLogger(__name__)
 
 class Processor:
-    def __init__(self, debug_display=False):
+    def __init__(self, config, debug_display=False):
         self.reset()
-        self._debug_display = debug_display
+        self._config = config
+        self._debug_display = self._config.find_one('$.app.debug_display', default=debug_display)
         pub.subscribe(self.reset, 'reset')
         pub.subscribe(self.listener, 'incoming')
 

@@ -44,6 +44,8 @@ def main():
         config.update_or_create('$.app.host', args.host)
     if args.port:
         config.update_or_create('$.app.port', args.port)
+    if args.debug_display:
+        config.update_or_create('$.app.debug_display', args.debug_display)
     if args.broker_host:
         config.update_or_create('$.broker.host', args.broker_host)
     if args.broker_port:
@@ -54,7 +56,9 @@ def main():
         debug=args.verbose
     )
     watcher = DirectoryWatcher(args.folder)
-    processor = Processor(args.debug_display)
+    processor = Processor(
+        config=config
+    )
     params = Params(
         broker=broker,
         config=config,
