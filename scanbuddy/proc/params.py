@@ -60,7 +60,7 @@ class Params:
     def table_position(self, ds, args):
         patient_name = ds.get('PatientName', 'UNKNOWN PATIENT')
         series_number = ds.get('SeriesNumber', 'UNKNOWN SERIES')
-        instance_number = ds.get('InstanceNUmber', 'UNKNOWN INSTANCE')
+        instance_number = ds.get('InstanceNumber', 'UNKNOWN INSTANCE')
         logger.info(f'checking table position for series={series_number}, instance={instance_number}')
         self._table_checked = True
         table_position = self.find_table_position(ds)
