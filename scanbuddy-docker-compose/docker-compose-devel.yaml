@@ -3,3 +3,4 @@ services:
     volumes:
       - ../scripts/start.py:/sw/miniforge/envs/python3.13t/bin/start.py
       - ../scanbuddy:/sw/miniforge/envs/python3.13t/lib/python3.13t/site-packages/scanbuddy
+    command: ["-c", "/etc/scanbuddy.yaml", "--folder", "/data", "--host", "0.0.0.0", "--broker-host", "scanbuddy-broker", "--debug-display"]
