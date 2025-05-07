@@ -32,6 +32,7 @@ services:
 
   scanbuddy-nginx:
     image: nginx:${NGINX_VERSION}
+    restart: unless-stopped
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf
       - ./nginx/logs:/var/log/nginx
@@ -49,7 +50,7 @@ services:
       timeout: 10s
       retries: 3
 
-  samba:
+  scanbuddy-samba:
     image: ghcr.io/servercontainers/samba:${SAMBA_VERSION}
     restart: unless-stopped
     ports:
