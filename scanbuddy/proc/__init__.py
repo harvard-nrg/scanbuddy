@@ -406,6 +406,7 @@ class Processor:
         return tasks
 
     def make_arrays_zero(self):
+        logger.info('freeing up RAM from snr arrays')
         self._fdata_array = None
         self._slice_intensity_means = None
         self._slice_means = None
