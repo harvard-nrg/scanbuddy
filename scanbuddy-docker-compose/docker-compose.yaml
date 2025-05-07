@@ -16,6 +16,11 @@ services:
     mem_limit: ${MEM_LIMIT}
     memswap_limit: ${MEM_SWAP_LIMIT}
     command: ["-c", "/etc/scanbuddy.yaml", "--folder", "/data", "--host", "0.0.0.0", "--broker-host", "scanbuddy-broker"]
+    healthcheck:
+      test: curl -sL -o /dev/null -u "scanbuddy:${SCANBUDDY_PASS}" --fail localhost:8080 
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   scanbuddy-broker:
     image: redis:${REDIS_VERSION}
@@ -38,6 +43,11 @@ services:
       no_proxy: "scanbuddy-web"
     depends_on:
       - scanbuddy-web
+    healthcheck:
+      test: curl -sL -o /dev/null -u "scanbuddy:${SCANBUDDY_PASS}" --fail localhost
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   samba:
     image: ghcr.io/servercontainers/samba:${SAMBA_VERSION}
