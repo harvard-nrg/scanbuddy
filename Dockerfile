@@ -1,7 +1,9 @@
 FROM rockylinux:8
 
-# install some base necessities
-RUN dnf install -y git vim
+# install EPEL repository and base packages
+RUN dnf install -y epel-release && \
+    dnf install -y git vim htop && \
+    dnf clean all
 
 # create a home directory
 RUN mkdir -p /home/scanbuddy
