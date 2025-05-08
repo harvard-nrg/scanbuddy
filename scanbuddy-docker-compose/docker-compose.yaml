@@ -15,6 +15,7 @@ services:
       - ${CONFIG}:/etc/scanbuddy.yaml
     mem_limit: ${MEM_LIMIT}
     memswap_limit: ${MEM_SWAP_LIMIT}
+    cpus: ${CPU_LIMIT}
     command: ["-c", "/etc/scanbuddy.yaml", "--folder", "/data", "--host", "0.0.0.0", "--broker-host", "scanbuddy-broker"]
     healthcheck:
       test: curl -sL -o /dev/null -u "${SCANBUDDY_USER}:${SCANBUDDY_PASS}" --fail localhost:8080
