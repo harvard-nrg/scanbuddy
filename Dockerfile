@@ -1,7 +1,7 @@
 FROM rockylinux:8
 
 # install some base necessities
-RUN dnf install -y git vim htop
+RUN dnf install -y git vim
 
 # create a home directory
 RUN mkdir -p /home/scanbuddy
