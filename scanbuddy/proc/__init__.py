@@ -28,7 +28,7 @@ class Processor:
     def reset(self):
         self._instances = SortedDict()
         self._slice_means = SortedDict()
-        self.make_arrays_zero()
+        self.make_arrays_zero('reset')
         pub.sendMessage('plot_snr', snr_metric=str(0.0))
         logger.debug('received message to reset')
 
@@ -347,6 +347,7 @@ class Processor:
         logger.info(f'SIZE OF MASK IS {size_mask} MB')
         logger.info(f'===============================')
         '''
+        mask = None
         
         return masked_data
 
@@ -405,9 +406,11 @@ class Processor:
 
         return tasks
 
-    def make_arrays_zero(self):
-        logger.info('freeing up RAM from snr arrays')
+    def make_arrays_zero(self, moment='end'):
+        if moment == 'end':
+            logger.info('freeing up RAM from snr arrays')
+        else:
+            logger.info('making sure snr arrays are deallocated')
         self._fdata_array = None
         self._slice_intensity_means = None
-        self._slice_means = None
 

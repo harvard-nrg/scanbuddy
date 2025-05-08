@@ -31,7 +31,7 @@ class View:
         self._host = self._config.find_one('$.app.host', default=host)
         self._port = self._config.find_one('$.app.port', default=port)
         self._debug = self._config.find_one('$.app.debug', default=debug)
-        self._title = self._config.find_one('$.app.title', default='Realtime fMRI Motion')
+        self._title = self._config.find_one('$.app.title', default='Scanbuddy')
         self._subtitle = 'Ready'
         self._num_warnings = 0
         self._instances = dict()

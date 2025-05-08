@@ -1,7 +1,7 @@
 # This is an example configuration file for the scanbuddy app.
 
 app:
-    title: Realtime fMRI Motion
+    title: Scanbuddy
     session_secret:
         env: SCANBUDDY_SESSION_KEY
     auth:
