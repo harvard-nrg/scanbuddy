@@ -9,41 +9,44 @@ app:
         pass:
             env: SCANBUDDY_PASS
     debug_display: false
-params:
-    coil_elements:
-        bad:
-            - receive_coil: Head_32
-              coil_elements:  HEA
-            - receive_coil: Head_32
-              coil_elements: HEP
-            - receive_coil: HeadNeck_64
-              coil_elements: HC2,4,6,7,NC2
-            - receive_coil: HeadNeck_64
-              coil_elements: HC2,4,6,7
-        message: |
-            Session: {SESSION}
-            Series: {SERIES}
-            Coil: {RECEIVE_COIL}, {COIL_ELEMENTS}
-            
-            Detected an issue with head coil elements.
+modalities:
+    bold:
+        params:
+            coil_elements:
+                bad:
+                    - receive_coil: Head_32
+                      coil_elements:  HEA
+                    - receive_coil: Head_32
+                      coil_elements: HEP
+                    - receive_coil: HeadNeck_64
+                      coil_elements: HC2,4,6,7,NC2
+                    - receive_coil: HeadNeck_64
+                      coil_elements: HC2,4,6,7
+                message: |
+                    Session: {SESSION}
+                    Series: {SERIES}
+                    Coil: {RECEIVE_COIL}, {COIL_ELEMENTS}
+                
+                    Detected an issue with head coil elements.    
 
-            1. Check head coil connection for debris or other obstructions.
-            2. Reconnect head coil securely.
-            3. Ensure that anterior and posterior coil elements are present.
+                    1. Check head coil connection for debris or other obstructions.
+                    2. Reconnect head coil securely.
+                    3. Ensure that anterior and posterior coil elements are present.    
 
-            Call 867-5309 for further assistance.
+                    Call 867-5309 for further assistance.
+    localizer:
+        params:
+            table_position:
+                bad:
+                    - receive_coil: Head_32
+                      table_position: -1250
+                message: |
+                    Session: {SESSION}
+                    Series: {SERIES}
+                    Table Position: {TABLE_POSITION}    
 
-    table_position:
-        bad:
-            - receive_coil: Head_32
-              table_position: -1250
-        message: |
-            Session: {SESSION}
-            Series: {SERIES}
-            Table Position: {TABLE_POSITION}
+                    Detected an issue with the table position.    
 
-            Detected an issue with the table position.
-
-            1. Verify that the table is at the correct height.
-            2. Re-align with laser.
-            3. Recapture previous scans from this session.
+                    1. Verify that the table is at the correct height.
+                    2. Re-align with laser.
+                    3. Recapture previous scans from this session.

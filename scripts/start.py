@@ -52,7 +52,6 @@ def main():
         config=config,
         debug=args.verbose
     )
-    watcher = DirectoryWatcher(args.folder)
     processor = Processor(
         config=config
     )
@@ -78,7 +77,10 @@ def main():
     logging.getLogger('werkzeug').setLevel(logging.ERROR)
 
     # start the watcher and view
-    watcher.start()
+    modalities = config.find_one('$.modalities', dict())
+    for modality in modalities:
+        watcher = DirectoryWatcher(f'{args.folder}/{modality}')
+        watcher.start()
     view.forever()
 
 if __name__ == '__main__':
