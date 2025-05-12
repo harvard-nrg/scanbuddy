@@ -42,11 +42,11 @@ services:
     expose:
       - "80"
     environment:
-      no_proxy: "scanbuddy-web"
+      no_proxy: "scanbuddy-web,scanbuddy-nginx"
     depends_on:
       - scanbuddy-web
     healthcheck:
-      test: curl -sL -o /dev/null -u "${SCANBUDDY_USER}:${SCANBUDDY_PASS}" --fail localhost
+      test: curl -sL -o /dev/null -u "${SCANBUDDY_USER}:${SCANBUDDY_PASS}" --fail scanbuddy-nginx
       interval: 30s
       timeout: 10s
       retries: 3
