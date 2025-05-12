@@ -8,12 +8,13 @@ from scanbuddy.watcher.dicom import DicomWatcher
 logger = logging.getLogger(__name__)
 
 class DirectoryWatcher:
-    def __init__(self, directory):
+    def __init__(self, directory, modality):
         self._directory = directory
+        self._modality = modality
         self._observer = PollingObserver(timeout=1)
         self._observer.schedule(
-            DirectoryHandler(),
-            directory
+            DirectoryHandler(modality),
+            directory,
         )
 
     def start(self):
@@ -24,8 +25,9 @@ class DirectoryWatcher:
         self._observer.join()
 
 class DirectoryHandler(FileSystemEventHandler):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, modality, *args, **kwargs):
         self._dicomwatcher = None
+        self._modality = modality
         super().__init__(*args, **kwargs)
 
     def on_created(self, event):
@@ -34,6 +36,6 @@ class DirectoryHandler(FileSystemEventHandler):
             if self._dicomwatcher:
                 logger.info('calling stop on dicomwatcher')
                 self._dicomwatcher.stop()
-            self._dicomwatcher = DicomWatcher(Path(event.src_path))
+            self._dicomwatcher = DicomWatcher(Path(event.src_path), self._modality)
             self._dicomwatcher.start()
 

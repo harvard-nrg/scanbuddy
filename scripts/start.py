@@ -15,6 +15,8 @@ from scanbuddy.proc.params import Params
 from scanbuddy.broker.redis import MessageBroker
 from scanbuddy.common import print_platform_info
 from scanbuddy.watcher.directory import DirectoryWatcher
+from scanbuddy.proc.bold import BoldProcessor
+from scanbuddy.proc.localizer import LocalizerProcessor
 
 logger = logging.getLogger('main')
 logging.basicConfig(level=logging.INFO)
@@ -66,7 +68,12 @@ def main():
         config=config,
         debug=args.verbose
     )
-
+    bold_processor = BoldProcessor(
+        config=config
+    )
+    localizer_processor = LocalizerProcessor(
+        config=config
+    )
     if args.verbose:
         logging.getLogger('scanbuddy.proc').setLevel(logging.DEBUG)
         logging.getLogger('scanbuddy.proc.params').setLevel(logging.DEBUG)
@@ -79,7 +86,7 @@ def main():
     # start the watcher and view
     modalities = config.find_one('$.modalities', dict())
     for modality in modalities:
-        watcher = DirectoryWatcher(f'{args.folder}/{modality}')
+        watcher = DirectoryWatcher(f'{args.folder}/{modality}', modality)
         watcher.start()
     view.forever()
 

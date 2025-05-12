@@ -15,12 +15,13 @@ from watchdog.events import PatternMatchingEventHandler
 logger = logging.getLogger(__name__)
 
 class DicomWatcher:
-    def __init__(self, directory):
+    def __init__(self, directory, modality):
         self._directory = directory
+        self._modality = modality
         self._inode = None
         self._observer = PollingObserver(timeout=.01)
         self._observer.schedule(
-            DicomHandler(ignore_directories=True),
+            DicomHandler(modality, ignore_directories=True),
             directory
         )
 
@@ -50,6 +51,10 @@ class DicomWatcher:
         pub.sendMessage('reset')
 
 class DicomHandler(PatternMatchingEventHandler):
+    def __init__(self, modality, **kwargs):
+        super().__init__(**kwargs)
+        self._modality = modality
+
     def on_created(self, event):
         path = Path(event.src_path)
         try:
@@ -58,14 +63,10 @@ class DicomHandler(PatternMatchingEventHandler):
                 logger.info(f'file {path} no longer exists')
                 return
             ds = self.read_dicom(path)
-            is_multi_echo, is_TE2 = self.check_echo(ds)
-            if is_multi_echo is True and is_TE2 is False:
-                os.remove(path)
-                return
             self.check_series(ds, path)
             path = self.construct_path(path, ds)
-            logger.info(f'publishing message to topic=incoming with ds={path}')
-            pub.sendMessage('incoming', ds=ds, path=path, multi_echo=is_multi_echo)
+            logger.info(f'publishing message to parent-proc topic with ds={path}')
+            pub.sendMessage('parent-proc', ds=ds, path=path, modality=self._modality)
         except InvalidDicomError as e:
             logger.info(f'not a dicom file {path}')
         except FileNotFoundError as e:
@@ -106,34 +107,6 @@ class DicomHandler(PatternMatchingEventHandler):
             self.trigger_reset(ds, old_path)
             self.first_dcm_series = ds.SeriesInstanceUID
             self.first_dcm_study = ds.StudyInstanceUID
-
-    def check_echo(self, ds):
-        '''
-        This method will check for the string 'TE' in 
-        the siemens private data tag. If 'TE' exists in that
-        tag it means the scan is multi-echo. If it is multi-echo
-        we are only interested in the second echo or 'TE2'
-        Return False if 'TE2' is not found. Return True if 
-        'TE2' is found or no reference to 'TE' is found
-        '''
-        sequence = ds[(0x5200, 0x9230)][0]
-        siemens_private_tag = sequence[(0x0021, 0x11fe)][0]
-        scan_string = str(siemens_private_tag[(0x0021, 0x1175)].value)
-        if 'TE2' in scan_string:
-            logger.info('multi-echo scan detected')
-            logger.info(f'using 2nd echo time: {self.get_echo_time(ds)}')
-            return True, True
-        elif 'TE' not in scan_string:
-            logger.info('single echo scan detected')
-            return False, False
-        else:
-            logger.info('multi-echo scan found, wrong echo time, deleting file and moving on')
-            return True, False
-
-    def get_echo_time(self, ds):
-        sequence = ds[(0x5200, 0x9230)][0]
-        echo_sequence_item = sequence[(0x0018, 0x9114)][0]
-        return echo_sequence_item[(0x0018, 0x9082)].value
 
     def trigger_reset(self, ds, old_path):
         study_name = self.first_dcm_study

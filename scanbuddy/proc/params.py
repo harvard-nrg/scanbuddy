@@ -6,7 +6,7 @@ logger = logging.getLogger(__name__)
 
 class Params:
     def __init__(self, config, broker=None, debug=False):
-        self._config = config.find_one('$.params', dict())
+        self._config = config.find_one('$.modalities', dict())
         self._broker = broker
         self._debug = debug
         self._coil_checked = False
@@ -18,7 +18,9 @@ class Params:
         self._coil_checked = False
         self._table_checked = False
 
-    def listener(self, ds):
+    def listener(self, ds, modality):
+        #logger.info(f'current value of self._config: {self._config}')
+        config = self._config[modality]['params']
         series_number = ds.get('SeriesNumber', 'UNKNOWN SERIES')
         instance_number = ds.get('InstanceNumber', 'UNKNOWN INSTANCE')
         logger.info(f'params listener fired for series={series_number}, instance={instance_number}')
@@ -28,8 +30,9 @@ class Params:
         if self._table_checked:
             logger.info(f'already checked table table position from series={series_number}')
             return
-        for item in self._config:
-            args = self._config[item]
+        for item in config:
+            logger.info(f'item is: {item}')
+            args = config[item]
             f = getattr(self, item)
             f(ds, args)
 
