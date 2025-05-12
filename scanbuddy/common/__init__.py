@@ -2,6 +2,7 @@ import os
 import sys
 import psutil
 import platform
+import scanbuddy
 from tabulate import tabulate
 
 def print_platform_info():
