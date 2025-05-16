@@ -15,8 +15,6 @@ from scanbuddy.proc.params import Params
 from scanbuddy.broker.redis import MessageBroker
 from scanbuddy.common import print_platform_info
 from scanbuddy.watcher.directory import DirectoryWatcher
-from scanbuddy.proc.bold import BoldProcessor
-from scanbuddy.proc.localizer import LocalizerProcessor
 
 logger = logging.getLogger('main')
 logging.basicConfig(level=logging.INFO)
@@ -67,12 +65,6 @@ def main():
         broker=broker,
         config=config,
         debug=args.verbose
-    )
-    bold_processor = BoldProcessor(
-        config=config
-    )
-    localizer_processor = LocalizerProcessor(
-        config=config
     )
     if args.verbose:
         logging.getLogger('scanbuddy.proc').setLevel(logging.DEBUG)
