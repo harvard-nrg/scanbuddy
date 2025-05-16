@@ -19,7 +19,6 @@ class Params:
         self._table_checked = False
 
     def listener(self, ds, modality):
-        #logger.info(f'current value of self._config: {self._config}')
         config = self._config[modality]['params']
         series_number = ds.get('SeriesNumber', 'UNKNOWN SERIES')
         instance_number = ds.get('InstanceNumber', 'UNKNOWN INSTANCE')

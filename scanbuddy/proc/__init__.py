@@ -12,8 +12,6 @@ import threading
 import numpy as np
 from pubsub import pub
 from pathlib import Path
-#from scanbuddy.proc.bold import BoldProcessor
-#from scanbuddy.proc.localizer import LocalizerProcessor
 
 logger = logging.getLogger(__name__)
 
