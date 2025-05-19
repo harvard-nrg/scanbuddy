@@ -1,26 +1,21 @@
 import os
-import sys
-import pdb
-import time
-import math
-import json
-import shutil
-import psutil
 import logging
-import datetime
-import threading
-import numpy as np
 from pubsub import pub
-from pathlib import Path
 from scanbuddy.proc.bold import BoldProcessor
 from scanbuddy.proc.localizer import LocalizerProcessor
 
 logger = logging.getLogger(__name__)
 
 class Processor:
+    MAPPING = {
+        'bold': BoldProcessor,
+        'localizer': LocalizerProcessor
+    }
+
     def __init__(self, config, debug_display=False):
         pub.subscribe(self.listener, 'parent-proc')
-        self._config=config
+        self._config = config
+        self._processors = dict()
         self.start_processors()
 
     def listener(self, ds, path, modality):
@@ -28,28 +23,29 @@ class Processor:
         logger.info(f'publishing to {modality}-proc topic')
         pub.sendMessage(f'{modality}-proc', ds=ds, path=path, modality=modality)
 
+    def get_modalities(self):
+        modalities = self._config.find_one('$.modalities', dict())
+        if not modalities:
+            raise ProcessorError(f'no modalities were found in configuration '
+                f'file {self._config._file}')
+        modalities = set(map(str.lower, modalities.keys()))
+        supported = set(Processor.MAPPING.keys())
+        intersection = supported.intersection(modalities)
+        if not supported.intersection(modalities):
+            raise ProcessorError(f'config file contains {modalities} modalities, '
+                f' but the only supported modalities are {supported}')
+        return modalities
+
     def start_processors(self):
-        self._modalities = self._config.find_one('$.modalities', dict())    
-        for modality in self._modalities:
-            if modality in self.mapping:
-                module_path, class_name = self.mapping[modality]
-                try:
-                    # Dynamically import the module and class
-                    mod = __import__(module_path, fromlist=[class_name])
-                    processor_class = getattr(mod, class_name)
-                    processor_instance = processor_class(self._config)
-                    self.processor_instances[modality] = processor_instance
-                    logger.info(f'Initialized {class_name} for {modality} modality')
-                except ImportError:
-                    logger.error(f'Could not import module for modality "{modality}": {module_path}.{class_name}')
-                except AttributeError:
-                    logger.error(f'Class "{class_name}" not found in module "{module_path}"')
+        for modality in self.get_modalities():
+            if modality in Processor.MAPPING:
+                class_ = Processor.MAPPING[modality]
+                instance = class_(self._config)
+                logger.debug(f'instantiated processor for {modality}')
+                self._processors[modality] = instance
             else:
-                logger.warning(f'No processor mapping found for modality "{modality}"(i.e. that modality is not supported or there is a typo somewhere)') 
+                logger.error(f'no processor mapping was found for modality "{modality}"')
 
-    processor_instances = {}            
+class ProcessorError(Exception):
+    pass
 
-    mapping = {
-        'bold': ('scanbuddy.proc.bold', 'BoldProcessor'),
-        'localizer': ('scanbuddy.proc.localizer', 'LocalizerProcessor'),
-    }

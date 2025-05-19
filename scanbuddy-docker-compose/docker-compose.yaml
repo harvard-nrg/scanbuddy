@@ -1,7 +1,7 @@
 services:
   scanbuddy-web:
     image: ghcr.io/harvard-nrg/scanbuddy:${SCANBUDDY_VERSION}
-    restart: unless-stopped
+    restart: on-failure:3
     depends_on:
       - scanbuddy-broker
     environment:

@@ -17,8 +17,20 @@ class DirectoryWatcher:
             directory,
         )
 
+    def _check_dir(self):
+        if not self._directory.exists():
+            raise DirectoryWatcherError(f'No such file or directory: {self._directory}')
+        try:
+            test = Path(self._directory, 'write.test')
+            test.touch()
+            test.unlink()
+        except Exception as e:
+            logger.error(e)
+            raise DirectoryWatcherError(f'could not write test file {test}')
+
     def start(self):
         logger.info(f'starting directory watcher on {self._directory}')
+        self._check_dir()
         self._observer.start()
 
     def join(self):
@@ -39,3 +51,5 @@ class DirectoryHandler(FileSystemEventHandler):
             self._dicomwatcher = DicomWatcher(Path(event.src_path), self._modality)
             self._dicomwatcher.start()
 
+class DirectoryWatcherError(Exception):
+    pass

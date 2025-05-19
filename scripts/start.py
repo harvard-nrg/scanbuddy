@@ -14,7 +14,7 @@ from scanbuddy.proc.volreg import VolReg
 from scanbuddy.proc.params import Params
 from scanbuddy.broker.redis import MessageBroker
 from scanbuddy.common import print_platform_info
-from scanbuddy.watcher.directory import DirectoryWatcher
+from scanbuddy.watcher.directory import DirectoryWatcher,DirectoryWatcherError
 
 logger = logging.getLogger('main')
 logging.basicConfig(level=logging.INFO)
@@ -78,8 +78,12 @@ def main():
     # start the watcher and view
     modalities = config.find_one('$.modalities', dict())
     for modality in modalities:
-        watcher = DirectoryWatcher(f'{args.folder}/{modality}', modality)
-        watcher.start()
+        path = Path(args.folder, modality)
+        watcher = DirectoryWatcher(path, modality)
+        try:
+            watcher.start()
+        except Exception as e:
+            logger.error(e)
     view.forever()
 
 if __name__ == '__main__':
