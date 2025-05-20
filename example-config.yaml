@@ -27,7 +27,7 @@ modalities:
                     Series: {SERIES}
                     Coil: {RECEIVE_COIL}, {COIL_ELEMENTS}
                 
-                    Detected an issue with head coil elements.    
+                    Detected an issue with head coil elements.
 
                     1. Check head coil connection for debris or other obstructions.
                     2. Reconnect head coil securely.
@@ -41,13 +41,14 @@ modalities:
                 message: |
                     Session: {SESSION}
                     Series: {SERIES}
-                    Table Position: {TABLE_POSITION}    
+                    Table Position: {TABLE_POSITION}
 
-                    Detected an issue with the table position.    
+                    Detected an issue with the table position.
 
-                    1. Verify that the table is at the correct height.
-                    2. Re-align with laser.
-                    3. Recapture previous scans from this session.
+                    1. Slide the table position to home.
+                    2. Re-align to iso-center with laser.
+                    3. Delete all scans currently in the queue.
+                    4. Re-run localizer and scout, pull over protocal again.
     localizer:
         params:
             table_position:
@@ -57,10 +58,11 @@ modalities:
                 message: |
                     Session: {SESSION}
                     Series: {SERIES}
-                    Table Position: {TABLE_POSITION}    
+                    Table Position: {TABLE_POSITION}
 
-                    Detected an issue with the table position.    
+                    Detected an issue with the table position.
 
-                    1. Verify that the table is at the correct height.
-                    2. Re-align with laser.
-                    3. Recapture previous scans from this session.
+                    1. Slide the table position to home.
+                    2. Re-align to iso-center with laser.
+                    3. Delete all scans currently in the queue.
+                    4. Re-run localizer and scout, pull over protocal again.
