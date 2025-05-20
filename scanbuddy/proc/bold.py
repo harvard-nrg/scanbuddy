@@ -415,7 +415,7 @@ class BoldProcessor:
         if moment == 'end':
             logger.info('freeing up RAM from snr arrays')
         else:
-            logger.info('making sure snr arrays are deallocated')
+            logger.debug('making sure snr arrays are deallocated')
         self._fdata_array = None
         self._slice_intensity_means = None
 

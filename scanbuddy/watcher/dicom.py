@@ -27,6 +27,8 @@ class DicomWatcher:
 
     def start(self):
         logger.info(f'starting dicom watcher on {self._directory}')
+        logger.debug(f'hitting reset')
+        pub.sendMessage('reset')
         self._inode = os.stat(self._directory).st_ino
         self._observer.start()
 
@@ -48,7 +50,6 @@ class DicomWatcher:
                 pass
         else:
             logger.info(f'not going to remove new directory with the same name {self._directory}')
-        pub.sendMessage('reset')
 
 class DicomHandler(PatternMatchingEventHandler):
     def __init__(self, modality, **kwargs):
