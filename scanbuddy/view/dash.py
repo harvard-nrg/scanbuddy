@@ -506,10 +506,15 @@ class View:
     def check_messages(self, n_intervals):
         try:
             message = self._redis_client.get('scanbuddy_messages')
+            logger.info(f'there are currently {len(message) if message is not None else 0} scanbuddy messages')
             if message:
                 self._num_warnings += 1
                 self._redis_client.delete('scanbuddy_messages')
-                return True, message.decode(), self._num_warnings
+                decoded_message = message.decode()
+                message = self._redis_client.get('scanbuddy_messages')
+                logger.info('there should be 0 scanbuddy messages')
+                logger.info(f'actual number of scanbuddy messages: {len(message) if message is not None else 0}')
+                return True, decoded_message, self._num_warnings
         except redis.exceptions.ConnectionError as e:
             logger.warning(f'unable to get messages from message broker, service unavailable')
 
