@@ -1,16 +1,21 @@
 Customize `default.env`, save to a file named `.env`, then run
 
 ```bash
-docker compose up
+docker compose up -d
 ```
 
 By default, this will start Scan Buddy, Redis, and Nginx.
 
 ## Samba
-To start a Samba service container, add the `samba` profile
+To start a Samba service container, add the `samba` or `samba-macos` 
+profile
+
+> [!IMPORTANT]
+> For running on macOS, use the experimental `--profile samba-macos`. 
+> This will build a samba container image from the ground up. 
 
 ```bash
-docker compose --profile samba up
+docker compose --profile samba up -d
 ```
 
 ## Developers

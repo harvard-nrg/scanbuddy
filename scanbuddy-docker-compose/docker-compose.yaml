@@ -56,19 +56,52 @@ services:
     restart: unless-stopped
     ports:
       - "445:445"
-    expose:
-      - "445"
     environment:
       SAMBA_CONF_LOG_LEVEL: 3
       WSDD2_DISABLE: 1
       AVAHI_DISABLE: 1
       NETBIOS_DISABLE: 1
-      GROUP_fakegroup: 20
       ACCOUNT_scanbuddy: ${SAMBA_PASS}
-      UID_scanbuddy: 501
-      GROUPS_scanbuddy: fakegroup
-      SAMBA_VOLUME_CONFIG_scanbuddy: "[scanbuddy]; path=/data; valid users = scanbuddy; guest ok = no; read only = no; browseable = yes"
+      UID_scanbuddy: ${UID}
+      GROUP_scanbuddy: ${GID}
+      SAMBA_VOLUME_CONFIG_share: |
+        [bold]
+          path = /data/bold
+          read only = no
+          writable = yes
+          browsable = yes
+          create mode = 0660
+          directory mode = 0770
+        [bold]
+          path = /data/localizer
+          read only = no
+          writable = yes
+          browsable = yes
+          create mode = 0660
+          directory mode = 0770
     volumes:
       - ${INCOMING_DIR}:/data
     profiles: [samba]
+
+  scanbuddy-samba-macos:
+    build:
+      context: ./samba
+      args:
+        SAMBA_USER: ${SAMBA_USER}
+        SAMBA_PASS: ${SAMBA_PASS}
+        UID: ${UID}
+        GID: ${GID}
+    restart: unless-stopped
+    ports:
+      - "445:445"
+    volumes:
+      - ./samba/logs:/var/log/samba
+      - ./samba/smb.conf:/etc/samba/smb.conf
+      - ${INCOMING_DIR}:/data
+    healthcheck:
+      test: smbclient -L '\\localhost\' -U '%' -m SMB3
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    profiles: [samba-macos]
 
