@@ -19,7 +19,7 @@ modalities:
                     - receive_coil: Head_32
                       coil_elements: HEP
                     - receive_coil: HeadNeck_64
-                      coil_elements: HC2,4,6,7,NC2
+                      coil_elements: HC2,4,6,7;NC2
                     - receive_coil: HeadNeck_64
                       coil_elements: HC2,4,6,7
                 message: |
