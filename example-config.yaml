@@ -8,7 +8,7 @@ app:
         user: scanbuddy
         pass:
             env: SCANBUDDY_PASS
-    debug_display: false
+    debug_display: true
 modalities:
     bold:
         params:
