@@ -31,7 +31,7 @@ Scanbuddy can be installed and run two different ways. Users can either install 
 
 Installing via Docker Compose
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Installing and running Scanbuddy via docker compose has only been tested on MacOS by the developers, though it's likely it will work on Linux as well. 
+Installing and running Scanbuddy via docker compose has only been tested on MacOS by the developers, though it's likely it will work on Linux as well. Check out an installation video for `docker compose here <https://youtu.be/JbkHnK4dlpo>`_.
 
 Installing Services Individually
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
