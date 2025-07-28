@@ -12,18 +12,32 @@ Let's start with what Scanbuddy is all about. fMRI is a powerful research and cl
 
 To combat subject motion and optimize data quality, motion-correcting software algorithms can be employed in the post-processing stage, as well as data deletion and imputation methods. However, there are instances of subject motion being severe enough to make the dataset unusable. This is where Scanbuddy comes in! Scanbuddy produces motion plots to be viewed by researchers at the time of data acquisition, appearing on screen at the conclusion of fMRI scans. Individual researchers will determine acceptable motion standards. Seeing motion plots at acquisition can help researchers decide if a scan should be re-acquired. You no longer have to wait until data processing to get an idea of how much your subject has or has not moved.
 
-Scanbuddy also provides an estimate of the Signal-to-Noise Ratio (SNR) with the motion plots to give researchers an idea of overall data quality. Scanbuddy does not save motion plots by default and does not store data on its host machine. Scanbuddy will create a new motion plot and compute a new SNR metric for every fMRI scan acquired. Scanbuddy also supports multi-echo BOLD scans with the assumption that the second echo time (TE2) is the TE of interest. Scanbuddy is containerized with Docker and is available on Github Container Repository.
+Scanbuddy also provides an estimate of the Signal-to-Noise Ratio (SNR) with the motion plots to give researchers an idea of overall data quality. Scanbuddy does not save motion plots by default and does not store data on its host machine. Scanbuddy will create a new motion plot and compute a new SNR metric for every fMRI scan acquired. Scanbuddy also supports multi-echo BOLD scans with the assumption that the second echo time (TE2) is the TE of interest. Scanbuddy also checks for common errors involving head coils and table position. For example, if the headcoil is not plugged in completely Scanbuddy will notify the users with a red WARNING screen to notify them. Similarly, if the table position was configured incorrectly, Scanbuddy will display a red WARNING screen notifying the user. Scanbuddy is containerized with Docker and is available on Github Container Registry.
 
 
 What You Will Need
 ^^^^^^^^^^^^^^^^^^
-Scanbuddy should be run on a standalone machine (separate from the scanner host PC) that runs Linux and you have sudo privileges. We've used several distributions of Linux in development (ubuntu, debian, asahi) and all have run Scanbuddy successfully. The Scanbuddy machine should have 16 GB of RAM if possible; it may still work with less memory depending on the size of the data being acquired. The machine should be capable of running a web browser and Docker. You will also need a monitor to connect to the machine to display the motion plots.
+Scanbuddy should be run on a standalone machine (separate from the scanner host PC) that runs Linux and you have sudo privileges. We've used several distributions of Linux in development (ubuntu, debian, asahi) and all have run Scanbuddy successfully. The Scanbuddy machine should have 16 GB of RAM if possible; it may still work with less memory depending on the size of the data being acquired. The machine should be capable of running a web browser and Docker. You will also need a monitor to connect to the machine to display the motion plots. As an additional safety measure, the computer that you're running Scanbuddy on should be plugged into a surge protector.
 
 .. note::
-     Take a look at installing Docker on Linux `here <https://docs.docker.com/engine/install/>`_.
+     
+    | Docker Linux installation: `Docker Engine <https://docs.docker.com/engine/install/>`_
+    | Docker MacOS installation: `Docker Desktop <https://docs.docker.com/desktop/setup/install/mac-install/>`_
+
+
+Two Installation Options
+""""""""""""""""""""""""
+Scanbuddy can be installed and run two different ways. Users can either install each component individually (samba, redis, etc.) or via docker compose, which runs all services as docker containers. Docker compose is simpler, but advanced users may be interested in having more direct control over each service. See below for installation instructions for both approaches.
+
+Installing via Docker Compose
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Installing and running Scanbuddy via docker compose has only been tested on MacOS by the developers, though it's likely it will work on Linux as well. 
+
+Installing Services Individually
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Samba Share
-^^^^^^^^^^^
+"""""""""""
 Data streaming from the scanner to the Scanbuddy machine should be set up via a Samba share mount. Samba enables the scanner to stream dicom data directly to the Scanbuddy machine so that Scanbuddy can build the motion plots and display them when the scan ends.
 
 Let's get Samba up and running! First thing to do: install Samba:
@@ -90,7 +104,7 @@ If that doesn't work, try:
 Your Samba share should be up and running now!
 
 Configuring the Plugin
-^^^^^^^^^^^^^^^^^^^^^^
+""""""""""""""""""""""
 We have to tell the scanner which scans should be exported to the Scanbuddy machine and where the scanbuddy machine is. These instructions are for a Siemens XA30 system, though they may be relevant for other systems as well. First things first, make sure you're sitting at your scanner PC!
 
 | 1. Identify the protocol folder with BOLD scans you want to be auto-exported to Scanbuddy. Make the protocol folder editable by clicking on the edit icon.
@@ -132,7 +146,7 @@ When you click "Enable Auto Export" you should see several more fields appear. T
         | 4. For more advice see `Siemens IDEA board users <https://www.magnetom.net/t/how-to-send-the-real-time-bold-images-to-custom-server-in-order-to-monitor-the-real-time-head-motions/6614/22>`_.
 
 Building the Container Image
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+""""""""""""""""""""""""""""
 Scanbuddy is packaged up in a Docker container to abstract away the hassle of installing the specific software it needs. Hurray for Docker! We've built and pushed the Docker image to Github Container Repository so you can run ``docker pull`` to build it on your local (Scanbuddy) machine. Take a look at this page to pull the latest version: `Scanbuddy image <https://github.com/harvard-nrg/scanbuddy/pkgs/container/scanbuddy>`_.
 
 Build the container by running:
@@ -158,7 +172,7 @@ One feature of Scanbuddy is checking that the head coil is plugged in correctly 
      docker run -d --name redis -p 8001:8001 redis/redis-stack:latest
 
 Running Scanbuddy
-^^^^^^^^^^^^^^^^^
+"""""""""""""""""
 With the plugin and Samba configured and the container built, we're ready to run Scanbuddy! 
 
 The first thing to do is set a few environment variables inside of your shell for Scanbuddy: ``SCANBUDDY_PASS`` and ``SCANBUDDY_SESSION_KEY``
