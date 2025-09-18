@@ -81,7 +81,7 @@ class BoldProcessor:
         tasks = self.check_volreg(key)
         logger.debug('publishing message to volreg topic with the following tasks')
         logger.debug(json.dumps(tasks, indent=2))
-        pub.sendMessage('volreg', tasks=tasks)
+        pub.sendMessage('volreg', tasks=tasks, modality=modality)
         logger.debug(f'publishing message to params topic')
         pub.sendMessage('params', ds=ds, modality=modality)
 

@@ -1,4 +1,5 @@
 import os
+import pdb
 import glob
 import json
 import time
@@ -7,6 +8,7 @@ import pydicom
 import logging
 import subprocess
 import numpy as np
+import nibabel as nib
 from pubsub import pub
 from retry import retry
 from pathlib import Path
@@ -22,15 +24,16 @@ class VolReg:
         self._dcm2_instance_num = None
         pub.subscribe(self.listener, 'volreg')
 
-    def listener(self, tasks):
+    def listener(self, tasks, modality):
         '''
         In the following example, there are two tasks (most of the time there will be only 1)
              - dicom.2.dcm should be registered to dicom.1.dcm and the 6 moco params should be put into the 'volreg' attribute for dicom.2.dcm
              - dicom.3.dcm should be registered to dicom.2.dcm and the 6 moco params should be put into the 'volreg' attribute for dicom.3.dcm
         '''
-        logger.info('received tasks for volume registration')
-        logger.info(json.dumps(tasks, indent=2))
+        logger.debug('received tasks for volume registration')
+        logger.debug(json.dumps(tasks, indent=2))
         self.tasks = tasks
+        self.modality = modality
         if not self.tasks:
             return 
 
@@ -46,11 +49,15 @@ class VolReg:
 
         #### iterate through each task, create a nii file, run 3dvolreg and insert array into task volreg key-value pair
         for task_idx in range(self.num_tasks):
-            self.check_dicoms(task_idx)
+            if self.check_dicoms(task_idx):
+                continue
 
             start = time.time()
 
             nii1, nii2, dcm1, dcm2 = self.create_niis(task_idx)
+
+            if self.modality == 'vnav':
+                self.unmosaic_vnav([nii1, nii2])
 
             arr = self.run_volreg(nii1, nii2, self.out_dir)
 
@@ -94,7 +101,7 @@ class VolReg:
            'dcm2niix',
            '-b', 'y',
            '-s', 'y',
-           '-f', f'bold_{num}',
+           '-f', f'{self.modality}_{num}',
            '-o', self.out_dir,
            dicom
         ]
@@ -111,7 +118,6 @@ class VolReg:
 
     def run_volreg(self, nii_1, nii_2, outdir):
         mocopar = os.path.join(outdir, f'moco.par')
-        maxdisp = os.path.join(outdir, f'maxdisp')
         cmd = [
             '3dvolreg',
             '-base', nii_1,
@@ -120,11 +126,15 @@ class VolReg:
             '-x_thresh', '10',
             '-rot_thresh', '10',
             '-nomaxdisp',
-            '-prefix', 'NULL',
+            '-prefix', 'dummy.nii',
             nii_2
         ]
 
-        _ = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
+        try:
+            output = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
+        except subprocess.CalledProcessError as e:
+            logger.error(f"3dvolreg failed: {e.output.decode()}")
+            self.unmosaic_vnav([nii_2])
 
         arr = np.loadtxt(mocopar)
 
@@ -135,6 +145,7 @@ class VolReg:
     def check_dicoms(self, task_idx):
         if self.tasks[task_idx][1]['path'] == self.tasks[task_idx][0]['path']:
             logger.warning(f'the two input dicom files are the same. registering {os.path.basename(self.tasks[task_idx][1]["path"])} to itself will yield 0s')
+            self.insert_array([0, 0, 0, 0, 0, 0], task_idx)
             return True
         else:
             return False
@@ -149,7 +160,7 @@ class VolReg:
 
     def find_nii(self, directory, num):
         for file in os.listdir(directory):
-            if f'bold_{num}' in file and file.endswith('.nii'):#file.endswith('.gz'):
+            if f'{self.modality}_{num}' in file and file.endswith('.nii'):
                 return os.path.join(directory, file)
 
     def mock(self):
@@ -161,3 +172,36 @@ class VolReg:
             random.uniform(0.0, 1.0),
             random.uniform(0.0, 1.0)
         ]
+
+
+    def unmosaic_vnav(self, nii_list):
+        for file in nii_list:
+            nii = nib.load(file)
+            img = nii.get_fdata()
+            aff = nii.affine
+            hdr = nii.header        
+            if img.ndim == 3 and img.shape[2] == 1:
+                img = img[:, :, 0]
+            elif img.ndim == 2:
+                pass
+            else:
+                logger.debug(f"Unexpected input shape: {img.shape}")
+                continue
+            out_shape = (32, 32, 32)
+            unmosaic = np.zeros(out_shape, dtype=img.dtype)
+            count = 0
+            for row in range(6):
+                for col in range(6):
+                    if count >= 32:
+                        break
+                    x1 = col * 32
+                    y1 = row * 32
+                    tile = img[x1:x1+32, y1:y1+32]
+                    # In Siemens mosaic, each tile is a different slice and needs to go in the 3rd (z) dimension
+                    unmosaic[:, :, count] = tile.T  # need .T to go from x/y order to row/column order
+                    count += 1          
+            new_nii = nib.Nifti1Image(unmosaic, aff, hdr)
+            nib.save(new_nii, file)
+
+
+
