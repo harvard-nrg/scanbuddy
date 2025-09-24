@@ -3,7 +3,7 @@ User Documentation
 
 
 .. note::
-    This documentation assumes a basic understanding of the command line, the Linux operating system and Siemens MRI scanner host PCs. Here's a quick (and free!) crash `course <https://www.codecademy.com/learn/learn-the-command-line>`_ on the command line if needed. Instructions on streaming data to the Scanbuddy machine from a scanner are shown on a Siemens XA-30 system.
+    This documentation assumes a basic understanding of the command line, the Linux operating system and Siemens MRI scanner host PCs. Here's a quick (and free!) crash `course <https://www.codecademy.com/learn/learn-the-command-line>`_ on the command line if needed. Instructions on streaming data to the Scanbuddy machine from a scanner are shown on a Siemens XA-30 system, but Scanbuddy has also been deployed on Siemens scanners running XA-60.
 
 
 Overview
@@ -17,7 +17,7 @@ Scanbuddy also provides an estimate of the Signal-to-Noise Ratio (SNR) with the 
 
 What You Will Need
 ^^^^^^^^^^^^^^^^^^
-Scanbuddy should be run on a standalone machine (separate from the scanner host PC) that runs Linux and you have sudo privileges. We've used several distributions of Linux in development (ubuntu, debian, asahi) and all have run Scanbuddy successfully. The Scanbuddy machine should have 16 GB of RAM if possible; it may still work with less memory depending on the size of the data being acquired. The machine should be capable of running a web browser and Docker. You will also need a monitor to connect to the machine to display the motion plots. As an additional safety measure, the computer that you're running Scanbuddy on should be plugged into a surge protector.
+Scanbuddy should be run on a standalone machine (separate from the scanner host PC) that runs either MacOS or Linux. Users should have sudo privileges. We've used several distributions of Linux in development (ubuntu, debian, asahi) and all have run Scanbuddy successfully. The Scanbuddy machine should have 16 GB of RAM if possible; it may still work with less memory depending on the size of the data being acquired. The machine should be capable of running a web browser and Docker. You will also need a monitor to connect to the machine to display the motion plots. As an additional safety measure, the computer that you're running Scanbuddy on should be plugged into a surge protector.
 
 .. note::
      
@@ -26,12 +26,15 @@ Scanbuddy should be run on a standalone machine (separate from the scanner host 
 
 
 Two Installation Options
-""""""""""""""""""""""""
+^^^^^^^^^^^^^^^^^^^^^^^^
 Scanbuddy can be installed and run two different ways. Users can either install each component individually (samba, redis, etc.) or via docker compose, which runs all services as docker containers. Docker compose is simpler, but advanced users may be interested in having more direct control over each service. See below for installation instructions for both approaches.
 
 Installing via Docker Compose
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Installing and running Scanbuddy via docker compose has only been tested on MacOS by the developers, though it's likely it will work on Linux as well. Check out an installation video for `docker compose here <https://youtu.be/JbkHnK4dlpo>`_.
+
+.. note::
+    Please note that if you choose to install Scanbuddy via Docker Compose you will still need to install and test the `dot plugin <#configuring-the-plugin>`_ as well.
 
 Installing Services Individually
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
