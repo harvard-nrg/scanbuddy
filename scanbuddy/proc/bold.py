@@ -14,6 +14,7 @@ from pubsub import pub
 from pathlib import Path
 from sortedcontainers import SortedDict
 from scanbuddy.proc.snr import SNR
+from scanbuddy.proc.converter import Converter
 
 logger = logging.getLogger(__name__)
 
@@ -27,34 +28,13 @@ class BoldProcessor:
 
     def reset(self):
         self._instances = SortedDict()
-        self._slice_means = SortedDict()
+        self._snr_instances = SortedDict()
         self.make_arrays_zero('reset')
         pub.sendMessage('plot_snr', snr_metric=str(0.0))
         logger.debug('received message to reset')
 
-    def getsize(self, obj):
-        size_in_bytes = sys.getsizeof(obj)
-        return size_in_bytes
-
-    def get_size_slice_means(self):
-        total_size = 0
-        for key in self._slice_means:
-            slice_means = self._slice_means[key]['slice_means']
-            total_size += slice_means.nbytes
-        return total_size
-
-    def get_size_mask(self):
-        total_size = 0
-        for key in self._slice_means:
-            mask = self._slice_means[key]['mask']
-            if mask is not None:
-                mb = mask.nbytes / (1024**2)
-                shape = mask.shape
-                logger.info(f'mask for instance {key} is dtype={mask.dtype}, shape={shape}, size={mb} MB')
-                total_size += mask.nbytes
-        return total_size
-
     def listener(self, ds, path, modality):
+        self._modality = modality
         logger.info('inside of the bold-proc topic')
         key = int(ds.InstanceNumber)
         is_multi_echo, is_TE2 = self.check_echo(ds)
@@ -69,9 +49,9 @@ class BoldProcessor:
             'volreg': None,
             'nii_path': None
         }
-        self._slice_means[key] = {
+        self._snr_instances[key] = {
             'path': path,
-            'slice_means': None,
+            'fdata_array': None,
             'mask_threshold': None,
             'mask': None
         }
@@ -81,6 +61,13 @@ class BoldProcessor:
         tasks = self.check_volreg(key)
         logger.debug('publishing message to volreg topic with the following tasks')
         logger.debug(json.dumps(tasks, indent=2))
+
+
+        converter = Converter()
+        converter.run(self._instances[key], modality, key)
+
+        logger.info(f'current status of instances: {self._instances}')
+
         pub.sendMessage('volreg', tasks=tasks, modality=modality)
         logger.debug(f'publishing message to params topic')
         pub.sendMessage('params', ds=ds, modality=modality)
@@ -99,21 +86,15 @@ class BoldProcessor:
             pub.sendMessage('plot', instances=self._instances, subtitle_string=subtitle_string)
 
         snr_tasks = self.check_snr(key)
-        #logger.info(f'snr task sorted dict: {snr_tasks}')
 
         snr = SNR()
         nii_path = self._instances[key]['nii_path']
         snr.do(nii_path, snr_tasks)
+
         '''
-        size_of_snr_tasks = self.getsize(snr_tasks) / (1024**3)
-        size_of_slice_means = self.get_size_slice_means() / (1024**3)
-        size_of_fdata_array = self._fdata_array.nbytes / (1024**3)
-        logger.info('==============================================')
-        logger.info(f' SIZE OF snr_tasks IS {size_of_snr_tasks} GB')
-        logger.info(f' SIZE OF self._slice_means is {size_of_slice_means} GB')
-        logger.info(f' SIZE OF self._fdata_array is {size_of_fdata_array} GB')
-        logger.info('==============================================')
+        publish to SNR topic here (already being done with snr.do())
         '''
+
         logger.debug('after snr calculation')
         logger.debug(json.dumps(self._instances, indent=2))
         
@@ -121,27 +102,27 @@ class BoldProcessor:
             logger.info(f'Scan info: Project: {project}, Session: {session}, Series: {scandesc}, Scan Number: {scannum}, Date & Time: {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}')
             self._num_vols = ds[(0x0020, 0x0105)].value
             self._mask_threshold, self._decrement = self.get_mask_threshold(ds)
-            x, y, self._z, _ = self._slice_means[key]['slice_means'].shape
+            x, y, self._z, _ = self._snr_instances[key]['fdata_array'].shape
             self._fdata_array = np.zeros((x, y, self._z, self._num_vols), dtype=np.float64)
             self._slice_intensity_means = np.zeros((self._z, self._num_vols), dtype=np.float64)
 
 
 
             logger.info(f'shape of zeros: {self._fdata_array.shape}')
-            logger.info(f"shape of first slice means: {self._slice_means[key]['slice_means'].shape}")
+            logger.info(f"shape of first slice means: {self._snr_instances[key]['fdata_array'].shape}")
         
         if key >= 5:
             # double check that necessary objects exist before calculating SNR
             if self._fdata_array is None:
                 self._num_vols = ds[(0x0020, 0x0105)].value
                 self._mask_threshold, self._decrement = self.get_mask_threshold(ds)
-                x, y, self._z, _ = self._slice_means[key]['slice_means'].shape
+                x, y, self._z, _ = self._snr_instances[key]['fdata_array'].shape
                 self._fdata_array = np.zeros((x, y, self._z, self._num_vols), dtype=np.float64)
                 self._slice_intensity_means = np.zeros((self._z, self._num_vols), dtype=np.float64)
 
             insert_position = key - 5
-            self._fdata_array[:, :, :, insert_position] = self._slice_means[key]['slice_means'].squeeze()
-            self._slice_means[key]['slice_means'] = np.array([])
+            self._fdata_array[:, :, :, insert_position] = self._snr_instances[key]['fdata_array'].squeeze()
+            self._snr_instances[key]['fdata_array'] = np.array([])
             logger.info(f'Current RAM usage: {round(psutil.virtual_memory().used / (1024 ** 3), 3)} GB')
 
         
@@ -206,14 +187,6 @@ class BoldProcessor:
 
     def calc_snr(self, key):
         slice_intensity_means, slice_voxel_counts, data = self.get_mean_slice_intensities(key)
-        '''
-        size_slice_int_means = self.getsize(slice_intensity_means) / (1024**3)
-        size_data = self.getsize(data) / (1024**2)
-        logger.info('==============================================')
-        logger.info(f' SIZE OF slice_intensity_means IS {size_slice_int_means} MB')
-        logger.info(f' SIZE OF data IS {size_data} MB')
-        logger.info('==============================================')
-        '''
 
         non_zero_columns = ~np.all(slice_intensity_means == 0, axis=0)
 
@@ -344,7 +317,7 @@ class BoldProcessor:
     
         mask = np.ma.getmask(masked_data)
 
-        self._slice_means[key]['mask'] = mask
+        self._snr_instances[key]['mask'] = mask
         '''
         size_mask = self.get_size_mask() / (1024**2)
         logger.info(f'===============================')
@@ -360,8 +333,8 @@ class BoldProcessor:
         num_old_vols = key - 8
         last_50 = num_old_vols - 50
         logger.info(f'looking for mask differences between {key} and {key - 4}')
-        prev_mask = self._slice_means[key - 4]['mask']
-        current_mask = self._slice_means[key]['mask']
+        prev_mask = self._snr_instances[key - 4]['mask']
+        current_mask = self._snr_instances[key]['mask']
         differences = prev_mask != current_mask[:,:,:,:num_old_vols]
         #differences = prev_mask[:,:,:,-50:] != current_mask[:,:,:,last_50:num_old_vols]
         diff_indices = np.where(differences)
@@ -370,7 +343,7 @@ class BoldProcessor:
             if int(index[2]) not in differing_slices:
                 differing_slices.append(int(index[2]))
         logger.info(f'reclaim memory for instance {key - 4 } mask')
-        self._slice_means[key - 4]['mask'] = np.array([])
+        self._snr_instances[key - 4]['mask'] = np.array([])
         return differing_slices
 
 
@@ -401,10 +374,10 @@ class BoldProcessor:
     def check_snr(self, key):
         tasks = list()
 
-        current_idx = self._slice_means.bisect_left(key)
+        current_idx = self._snr_instances.bisect_left(key)
 
         try:
-            value = self._slice_means.values()[current_idx]
+            value = self._snr_instances.values()[current_idx]
             tasks.append(value)
         except IndexError:
             pass

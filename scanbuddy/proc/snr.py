@@ -64,7 +64,7 @@ class SNR:
         logger.debug(f'state of tasks when inserting {self.snr_tasks}')
         x, y, z = slice_means.shape
         data_array_4d = slice_means.reshape(x, y, z, 1)
-        task['slice_means'] = data_array_4d
+        task['fdata_array'] = data_array_4d
 
     def read_dicoms(self, last_idx):
         logger.debug(f'state of tasks when reading dicom: {self.snr_tasks}')
