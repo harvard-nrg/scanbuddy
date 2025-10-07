@@ -38,7 +38,7 @@ class Converter:
            dicom
         ]
         cmdstr = json.dumps(dcm2niix_cmd, indent=2)
-        logger.info(f'running dcm2niix: {cmdstr}')
+        logger.debug(f'running dcm2niix: {cmdstr}')
 
         output = subprocess.check_output(dcm2niix_cmd, stderr=subprocess.STDOUT)
 

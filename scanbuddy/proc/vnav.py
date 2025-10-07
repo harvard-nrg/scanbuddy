@@ -13,7 +13,7 @@ import numpy as np
 from pubsub import pub
 from pathlib import Path
 from sortedcontainers import SortedDict
-from scanbuddy.proc.snr import SNR
+from scanbuddy.proc.fdata import ExtractFdata
 
 logger = logging.getLogger(__name__)
 

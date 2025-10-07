@@ -17,7 +17,7 @@ from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
-class SNR:
+class ExtractFdata:
     def __init__(self):
         pub.subscribe(self.listener, 'snr')
 
@@ -77,9 +77,9 @@ class SNR:
     def clean_dir(self, instance_num):
         if instance_num == 1:
             return
-        for file in glob.glob(f'{os.path.dirname(self._nii_path)}/*.json'):
+        for file in glob.glob(f'{os.path.dirname(self._nii_path)}/*{instance_num-2}.json'):
             os.remove(file)
-        for file in glob.glob(f'{os.path.dirname(self._nii_path)}/*.nii'):
+        for file in glob.glob(f'{os.path.dirname(self._nii_path)}/*{instance_num-2}.nii'):
             os.remove(file)
 
     def get_num_tasks(self):

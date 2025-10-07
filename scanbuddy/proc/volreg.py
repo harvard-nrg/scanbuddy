@@ -1,5 +1,5 @@
 import os
-import pdb
+import sys
 import glob
 import json
 import time
@@ -31,7 +31,7 @@ class VolReg:
              - dicom.3.dcm should be registered to dicom.2.dcm and the 6 moco params should be put into the 'volreg' attribute for dicom.3.dcm
         '''
         logger.debug('received tasks for volume registration')
-        logger.debug(json.dumps(tasks, indent=2))
+        logger.debug(f'VOLREG TASKS: {json.dumps(tasks, indent=2)}')
         self.tasks = tasks
         self.modality = modality
         if not self.tasks:
@@ -47,19 +47,25 @@ class VolReg:
     def run(self):
         self.get_num_tasks()
 
-        #### iterate through each task, create a nii file, run 3dvolreg and insert array into task volreg key-value pair
+        '''
+        iterate through each task 
+        run 3dvolreg
+        insert array into task volreg key-value pair
+        '''
         for task_idx in range(self.num_tasks):
             if self.check_dicoms(task_idx):
                 continue
 
             start = time.time()
 
-            nii1, nii2, dcm1, dcm2 = self.create_niis(task_idx)
+            nii1, nii2 = self.get_niis(task_idx)
+
+            logger.info(f'nii1: {nii1}, nii2: {nii2}')
 
             if self.modality == 'vnav':
                 self.unmosaic_vnav([nii1, nii2])
 
-            arr = self.run_volreg(nii1, nii2, self.out_dir)
+            arr = self.run_volreg(nii1, nii2)
 
             logger.info(f'volreg array from registering volume {self._dcm2_instance_num} to volume {self._dcm1_instance_num}: {arr}')
 
@@ -73,50 +79,17 @@ class VolReg:
     def get_num_tasks(self):
         self.num_tasks = len(self.tasks)
 
-    def create_niis(self, task_idx):
-        
-        dcm1 = self.tasks[task_idx][1]['path']
-        self._dcm1_instance_num = int(pydicom.dcmread(dcm1, force=True, stop_before_pixels=True).InstanceNumber)
-        nii1 = self.run_dcm2niix(dcm1, self._dcm1_instance_num)
-        if self.tasks[task_idx][1]['nii_path'] is None:
-            self.tasks[task_idx][1]['nii_path'] = nii1
-
-        dcm2 = self.tasks[task_idx][0]['path']
-        self._dcm2_instance_num = int(pydicom.dcmread(dcm2, force=True, stop_before_pixels=True).InstanceNumber)
-        nii2 = self.run_dcm2niix(dcm2, self._dcm2_instance_num)
-        if self.tasks[task_idx][0]['nii_path'] is None:
-            self.tasks[task_idx][0]['nii_path'] = nii2
-
-        return nii1, nii2, dcm1, dcm2
+    def get_niis(self, task_idx):
+        logger.debug(f'VOLREG TASKS: {self.tasks}')
+        nii_1 = self.tasks[task_idx][1]['nii_path']
+        nii_2 = self.tasks[task_idx][0]['nii_path']
+        return nii_1, nii_2
 
     def insert_array(self, arr, task_idx):
         self.tasks[task_idx][0]['volreg'] = arr
 
-    @retry((CalledProcessError), delay=.1, max_delay=1.0, tries=5)
-    def run_dcm2niix(self, dicom, num):
-
-        self.out_dir = os.sep.join(dicom.split(os.sep)[:-1])
-
-        dcm2niix_cmd = [
-           'dcm2niix',
-           '-b', 'y',
-           '-s', 'y',
-           '-f', f'{self.modality}_{num}',
-           '-o', self.out_dir,
-           dicom
-        ]
-        cmdstr = json.dumps(dcm2niix_cmd, indent=2)
-        logger.debug(f'running {cmdstr}')
-
-        output = subprocess.check_output(dcm2niix_cmd, stderr=subprocess.STDOUT)
-
-        logger.debug(f'dcm2niix output: {output}')
-
-        nii_file = self.find_nii(self.out_dir, num)
-
-        return nii_file
-
-    def run_volreg(self, nii_1, nii_2, outdir):
+    def run_volreg(self, nii_1, nii_2):
+        outdir = str(Path(nii_1).parent)
         mocopar = os.path.join(outdir, f'moco.par')
         cmd = [
             '3dvolreg',
@@ -126,7 +99,7 @@ class VolReg:
             '-x_thresh', '10',
             '-rot_thresh', '10',
             '-nomaxdisp',
-            '-prefix', 'dummy.nii',
+            '-prefix', 'NULL',
             nii_2
         ]
 
@@ -148,20 +121,18 @@ class VolReg:
             self.insert_array([0, 0, 0, 0, 0, 0], task_idx)
             return True
         else:
+            self._dcm1_instance_num = int(pydicom.dcmread(self.tasks[task_idx][1]['path'], force=True, stop_before_pixels=True).InstanceNumber)
+            self._dcm2_instance_num = int(pydicom.dcmread(self.tasks[task_idx][0]['path'], force=True, stop_before_pixels=True).InstanceNumber)
             return False
 
-    def clean_dir(self, nii_1, nii_2, outdir):
+    '''
+    def clean_dir(self, outdir):
         os.remove(f'{outdir}/moco.par')
         for file in glob.glob(f'{outdir}/*.json'):
             os.remove(file)
         for file in glob.glob(f'{outdir}/*.nii'):
             os.remove(file)
-
-
-    def find_nii(self, directory, num):
-        for file in os.listdir(directory):
-            if f'{self.modality}_{num}' in file and file.endswith('.nii'):
-                return os.path.join(directory, file)
+    '''
 
     def mock(self):
         return [

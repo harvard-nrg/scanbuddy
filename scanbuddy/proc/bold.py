@@ -13,7 +13,7 @@ import numpy as np
 from pubsub import pub
 from pathlib import Path
 from sortedcontainers import SortedDict
-from scanbuddy.proc.snr import SNR
+from scanbuddy.proc.fdata import ExtractFdata
 from scanbuddy.proc.converter import Converter
 
 logger = logging.getLogger(__name__)
@@ -34,8 +34,8 @@ class BoldProcessor:
         logger.debug('received message to reset')
 
     def listener(self, ds, path, modality):
-        self._modality = modality
         logger.info('inside of the bold-proc topic')
+        self._modality = modality
         key = int(ds.InstanceNumber)
         is_multi_echo, is_TE2 = self.check_echo(ds)
         if is_multi_echo is True and is_TE2 is False:
@@ -66,8 +66,6 @@ class BoldProcessor:
         converter = Converter()
         converter.run(self._instances[key], modality, key)
 
-        logger.info(f'current status of instances: {self._instances}')
-
         pub.sendMessage('volreg', tasks=tasks, modality=modality)
         logger.debug(f'publishing message to params topic')
         pub.sendMessage('params', ds=ds, modality=modality)
@@ -87,16 +85,13 @@ class BoldProcessor:
 
         snr_tasks = self.check_snr(key)
 
-        snr = SNR()
+        fdata_extraction = ExtractFdata()
         nii_path = self._instances[key]['nii_path']
-        snr.do(nii_path, snr_tasks)
+        fdata_extraction.do(nii_path, snr_tasks)
 
         '''
-        publish to SNR topic here (already being done with snr.do())
+        publish to SNR topic here
         '''
-
-        logger.debug('after snr calculation')
-        logger.debug(json.dumps(self._instances, indent=2))
         
         if key < 5:
             logger.info(f'Scan info: Project: {project}, Session: {session}, Series: {scandesc}, Scan Number: {scannum}, Date & Time: {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}')
@@ -109,7 +104,7 @@ class BoldProcessor:
 
 
             logger.info(f'shape of zeros: {self._fdata_array.shape}')
-            logger.info(f"shape of first slice means: {self._snr_instances[key]['fdata_array'].shape}")
+            logger.info(f"shape of fdata array: {self._snr_instances[key]['fdata_array'].shape}")
         
         if key >= 5:
             # double check that necessary objects exist before calculating SNR
@@ -318,13 +313,7 @@ class BoldProcessor:
         mask = np.ma.getmask(masked_data)
 
         self._snr_instances[key]['mask'] = mask
-        '''
-        size_mask = self.get_size_mask() / (1024**2)
-        logger.info(f'===============================')
-        logger.info(f'SHAPE OF MASK IS {mask.shape}')
-        logger.info(f'SIZE OF MASK IS {size_mask} MB')
-        logger.info(f'===============================')
-        '''
+
         mask = None
         
         return masked_data

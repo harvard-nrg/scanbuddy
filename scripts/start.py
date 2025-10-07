@@ -5,7 +5,7 @@ import time
 import logging
 from pubsub import pub
 from pathlib import Path
-from scanbuddy.proc.snr import SNR
+from scanbuddy.proc.fdata import ExtractFdata
 from argparse import ArgumentParser
 from scanbuddy.config import Config
 from scanbuddy.proc import Processor
