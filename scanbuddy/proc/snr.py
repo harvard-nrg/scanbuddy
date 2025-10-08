@@ -11,6 +11,8 @@ import numpy as np
 import nibabel as nib
 from pubsub import pub
 import collections as c
+from pathlib import Path
+from sortedcontainers import SortedDict
 
 logger = logging.getLogger(__name__)
 
@@ -291,4 +293,8 @@ class SNR:
             logger.debug('making sure snr arrays are deallocated')
         self._fdata_array = None
         self._slice_intensity_means = None
+        self._snr_instances = SortedDict()
+        logger.info(f'Final RAM usage: {round(psutil.virtual_memory().used / (1024 ** 3), 3)} GB')
+
+
 
