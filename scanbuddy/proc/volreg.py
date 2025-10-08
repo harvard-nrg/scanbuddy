@@ -60,7 +60,7 @@ class VolReg:
 
             nii1, nii2 = self.get_niis(task_idx)
 
-            logger.info(f'nii1: {nii1}, nii2: {nii2}')
+            logger.debug(f'nii1: {nii1}, nii2: {nii2}')
 
             if self.modality == 'vnav':
                 self.unmosaic_vnav([nii1, nii2])

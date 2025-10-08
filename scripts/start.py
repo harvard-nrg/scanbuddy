@@ -5,13 +5,14 @@ import time
 import logging
 from pubsub import pub
 from pathlib import Path
-from scanbuddy.proc.fdata import ExtractFdata
+from scanbuddy.proc.snr import SNR
 from argparse import ArgumentParser
 from scanbuddy.config import Config
 from scanbuddy.proc import Processor
 from scanbuddy.view.dash import View
 from scanbuddy.proc.volreg import VolReg
 from scanbuddy.proc.params import Params
+from scanbuddy.proc.fdata import ExtractFdata
 from scanbuddy.broker.redis import MessageBroker
 from scanbuddy.common import print_platform_info
 from scanbuddy.watcher.directory import DirectoryWatcher,DirectoryWatcherError
@@ -61,6 +62,7 @@ def main():
         debug=args.verbose
     )
     volreg = VolReg(mock=args.mock)
+    snr = SNR()
     view = View(
         broker=broker,
         config=config,
@@ -68,8 +70,10 @@ def main():
     )
     if args.verbose:
         logging.getLogger('scanbuddy.proc').setLevel(logging.DEBUG)
+        logging.getLogger('scanbuddy.proc.fdata').setLevel(logging.DEBUG)
         logging.getLogger('scanbuddy.proc.params').setLevel(logging.DEBUG)
         logging.getLogger('scanbuddy.proc.volreg').setLevel(logging.DEBUG)
+        logging.getLogger('scanbuddy.proc.snr').setLevel(logging.DEBUG)
         logging.getLogger('scanbuddy.view.dash').setLevel(logging.DEBUG)
    
     # logging from this module is useful, but noisy

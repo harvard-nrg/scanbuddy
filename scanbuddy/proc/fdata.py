@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 class ExtractFdata:
     def __init__(self):
-        pub.subscribe(self.listener, 'snr')
+        pub.subscribe(self.listener, 'fdata')
 
 
     def do(self, nii_path, tasks):
