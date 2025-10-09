@@ -22,16 +22,6 @@ class VnavProcessor:
         pub.subscribe(self.listener, 'vnav-proc')
 
     def reset(self):
-        try:
-            data_path = os.path.dirname(self._instances[key]['path'])
-            logger.info(f'removing dicom dir: {data_path}')
-            path_obj = Path(data_path)
-            files = [f for f in os.listdir(path_obj.parent.absolute()) if os.path.isfile(f)]
-            logger.info(f'dangling files: {files}')
-            logger.info(f'removing {len(os.listdir(path_obj.parent.absolute())) - 1} dangling files')
-            shutil.rmtree(data_path)
-        except:
-            pass
         self._instances = SortedDict()
         logger.debug('received message to reset')
 
