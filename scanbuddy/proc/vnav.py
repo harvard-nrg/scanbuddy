@@ -1,19 +1,15 @@
 import os
 import sys
-import pdb
 import time
-import math
 import json
 import shutil
-import psutil
 import logging
-import datetime
-import threading
 import numpy as np
+import nibabel as nib
 from pubsub import pub
 from pathlib import Path
 from sortedcontainers import SortedDict
-from scanbuddy.proc.fdata import ExtractFdata
+from scanbuddy.proc.converter import Converter
 
 logger = logging.getLogger(__name__)
 
@@ -26,23 +22,18 @@ class VnavProcessor:
         pub.subscribe(self.listener, 'vnav-proc')
 
     def reset(self):
+        try:
+            data_path = os.path.dirname(self._instances[key]['path'])
+            logger.info(f'removing dicom dir: {data_path}')
+            path_obj = Path(data_path)
+            files = [f for f in os.listdir(path_obj.parent.absolute()) if os.path.isfile(f)]
+            logger.info(f'dangling files: {files}')
+            logger.info(f'removing {len(os.listdir(path_obj.parent.absolute())) - 1} dangling files')
+            shutil.rmtree(data_path)
+        except:
+            pass
         self._instances = SortedDict()
         logger.debug('received message to reset')
-
-    def getsize(self, obj):
-        size_in_bytes = sys.getsizeof(obj)
-        return size_in_bytes
-
-    def get_size_mask(self):
-        total_size = 0
-        for key in self._slice_means:
-            mask = self._slice_means[key]['mask']
-            if mask is not None:
-                mb = mask.nbytes / (1024**2)
-                shape = mask.shape
-                logger.info(f'mask for instance {key} is dtype={mask.dtype}, shape={shape}, size={mb} MB')
-                total_size += mask.nbytes
-        return total_size
 
     def listener(self, ds, path, modality):
         logger.info('inside of the vnav-proc topic')
@@ -52,14 +43,21 @@ class VnavProcessor:
             'volreg': None,
             'nii_path': None
         }
-        logger.info('current state of instances')
-        logger.info(json.dumps(self._instances, default=list, indent=2))
+        logger.debug('current state of instances')
+        logger.debug(json.dumps(self._instances, default=list, indent=2))
+
+        logger.info('instantiating and running converter')
+        converter = Converter()
+        converter.run(self._instances[key], modality, key)
 
         tasks = self.check_volreg(key)
-        logger.info('publishing message to volreg topic with the following tasks')
-        logger.info(json.dumps(tasks, indent=2))
+
+        self.unmosaic_vnav([self._instances[key]['nii_path'], self._instances[key]['nii_path']])
+
+        logger.debug('publishing message to volreg topic with the following tasks')
+        logger.debug(json.dumps(tasks, indent=2))
         pub.sendMessage('volreg', tasks=tasks, modality=modality)
-        logger.info(f'after volreg')
+        logger.debug(f'after volreg')
         logger.debug(f'publishing message to params topic')
         pub.sendMessage('params', ds=ds, modality=modality)
 
@@ -69,7 +67,11 @@ class VnavProcessor:
         scandesc = ds.get('SeriesDescription', '[SERIES]')
         scannum = ds.get('SeriesNumber', '[NUMBER]')
         subtitle_string = f'{project} • {session} • {scandesc} • {scannum}'
-        num_vols = ds[(0x0020, 0x0105)].value
+        try:
+            num_vols = ds[(0x0020, 0x0105)].value
+        except KeyError:
+            logger.info('Could not determine total number of volumes')
+            num_vols = 5000
         if self._debug_display:
             pub.sendMessage('plot', instances=self._instances, subtitle_string=subtitle_string)
         elif num_vols == key:
@@ -84,7 +86,6 @@ class VnavProcessor:
             logger.info(f'dangling files: {files}')
             logger.info(f'removing {len(os.listdir(path_obj.parent.absolute())) - 1} dangling files')
             shutil.rmtree(data_path)
-            self.make_arrays_zero()
 
 
     def check_volreg(self, key):
@@ -111,34 +112,32 @@ class VnavProcessor:
 
         return tasks
 
-    def get_new_key(self, instance_number):
-        return ((instance_number - 2) // 4) + 1
-
-    def check_echo(self, ds):
-        '''
-        This method will check for the string 'TE' in 
-        the siemens private data tag. If 'TE' exists in that
-        tag it means the scan is multi-echo. If it is multi-echo
-        we are only interested in the second echo or 'TE2'
-        Return False if 'TE2' is not found. Return True if 
-        'TE2' is found or no reference to 'TE' is found
-        '''
-        sequence = ds[(0x5200, 0x9230)][0]
-        siemens_private_tag = sequence[(0x0021, 0x11fe)][0]
-        scan_string = str(siemens_private_tag[(0x0021, 0x1175)].value)
-        if 'TE2' in scan_string:
-            logger.info('multi-echo scan detected')
-            logger.info(f'using 2nd echo time: {self.get_echo_time(ds)}')
-            return True, True
-        elif 'TE' not in scan_string:
-            logger.info('single echo scan detected')
-            return False, False
-        else:
-            logger.info('multi-echo scan found, wrong echo time, deleting file and moving on')
-            return True, False
-
-    def get_echo_time(self, ds):
-        sequence = ds[(0x5200, 0x9230)][0]
-        echo_sequence_item = sequence[(0x0018, 0x9114)][0]
-        return echo_sequence_item[(0x0018, 0x9082)].value
+    def unmosaic_vnav(self, nii_list):
+        for file in nii_list:
+            nii = nib.load(file)
+            img = nii.get_fdata()
+            aff = nii.affine
+            hdr = nii.header        
+            if img.ndim == 3 and img.shape[2] == 1:
+                img = img[:, :, 0]
+            elif img.ndim == 2:
+                pass
+            else:
+                logger.debug(f"Unexpected input shape: {img.shape}")
+                continue
+            out_shape = (32, 32, 32)
+            unmosaic = np.zeros(out_shape, dtype=img.dtype)
+            count = 0
+            for row in range(6):
+                for col in range(6):
+                    if count >= 32:
+                        break
+                    x1 = col * 32
+                    y1 = row * 32
+                    tile = img[x1:x1+32, y1:y1+32]
+                    # In Siemens mosaic, each tile is a different slice and needs to go in the 3rd (z) dimension
+                    unmosaic[:, :, count] = tile.T  # need .T to go from x/y order to row/column order
+                    count += 1          
+            new_nii = nib.Nifti1Image(unmosaic, aff, hdr)
+            nib.save(new_nii, file)
 

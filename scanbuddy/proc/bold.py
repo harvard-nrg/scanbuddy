@@ -59,13 +59,13 @@ class BoldProcessor:
         logger.debug('current state of instances')
         logger.debug(json.dumps(self._instances, default=list, indent=2))
 
+        logger.info('instantiating and running converter')
+        converter = Converter()
+        converter.run(self._instances[key], modality, key)
+
         tasks = self.check_volreg(key)
         logger.debug('publishing message to volreg topic with the following tasks')
         logger.debug(json.dumps(tasks, indent=2))
-
-
-        converter = Converter()
-        converter.run(self._instances[key], modality, key)
 
         pub.sendMessage('volreg', tasks=tasks, modality=modality)
         logger.debug(f'publishing message to params topic')
