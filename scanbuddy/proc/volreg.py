@@ -62,9 +62,6 @@ class VolReg:
 
             logger.debug(f'nii1: {nii1}, nii2: {nii2}')
 
-            if self.modality == 'vnav':
-                self.unmosaic_vnav([nii1, nii2])
-
             arr = self.run_volreg(nii1, nii2)
 
             logger.info(f'volreg array from registering volume {self._dcm2_instance_num} to volume {self._dcm1_instance_num}: {arr}')
@@ -107,7 +104,6 @@ class VolReg:
             output = subprocess.check_output(cmd, stderr=subprocess.STDOUT)
         except subprocess.CalledProcessError as e:
             logger.error(f"3dvolreg failed: {e.output.decode()}")
-            self.unmosaic_vnav([nii_2])
 
         arr = np.loadtxt(mocopar)
 
@@ -125,15 +121,6 @@ class VolReg:
             self._dcm2_instance_num = int(pydicom.dcmread(self.tasks[task_idx][0]['path'], force=True, stop_before_pixels=True).InstanceNumber)
             return False
 
-    '''
-    def clean_dir(self, outdir):
-        os.remove(f'{outdir}/moco.par')
-        for file in glob.glob(f'{outdir}/*.json'):
-            os.remove(file)
-        for file in glob.glob(f'{outdir}/*.nii'):
-            os.remove(file)
-    '''
-
     def mock(self):
         return [
             random.uniform(0.0, 1.0),
@@ -143,36 +130,6 @@ class VolReg:
             random.uniform(0.0, 1.0),
             random.uniform(0.0, 1.0)
         ]
-
-
-    def unmosaic_vnav(self, nii_list):
-        for file in nii_list:
-            nii = nib.load(file)
-            img = nii.get_fdata()
-            aff = nii.affine
-            hdr = nii.header        
-            if img.ndim == 3 and img.shape[2] == 1:
-                img = img[:, :, 0]
-            elif img.ndim == 2:
-                pass
-            else:
-                logger.debug(f"Unexpected input shape: {img.shape}")
-                continue
-            out_shape = (32, 32, 32)
-            unmosaic = np.zeros(out_shape, dtype=img.dtype)
-            count = 0
-            for row in range(6):
-                for col in range(6):
-                    if count >= 32:
-                        break
-                    x1 = col * 32
-                    y1 = row * 32
-                    tile = img[x1:x1+32, y1:y1+32]
-                    # In Siemens mosaic, each tile is a different slice and needs to go in the 3rd (z) dimension
-                    unmosaic[:, :, count] = tile.T  # need .T to go from x/y order to row/column order
-                    count += 1          
-            new_nii = nib.Nifti1Image(unmosaic, aff, hdr)
-            nib.save(new_nii, file)
 
 
 
