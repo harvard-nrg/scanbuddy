@@ -20,7 +20,7 @@ requires = [
     'dash_auth',
     'nibabel',
     'psutil',
-    'tabulate'
+    'tabulate',
 ]
 
 about = dict()

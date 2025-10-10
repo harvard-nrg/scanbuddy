@@ -3,13 +3,15 @@ import logging
 from pubsub import pub
 from scanbuddy.proc.bold import BoldProcessor
 from scanbuddy.proc.localizer import LocalizerProcessor
+from scanbuddy.proc.vnav import VnavProcessor
 
 logger = logging.getLogger(__name__)
 
 class Processor:
     MAPPING = {
         'bold': BoldProcessor,
-        'localizer': LocalizerProcessor
+        'localizer': LocalizerProcessor,
+        'vnav': VnavProcessor
     }
 
     def __init__(self, config, debug_display=False):

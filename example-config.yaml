@@ -66,3 +66,40 @@ modalities:
                     2. Realign to isocenter with laser.
                     3. Delete all scans currently in the queue.
                     4. Rerun localizer and scout, pull over entire protocal again.
+    vnav:
+        params:
+            table_position:
+                bad:
+                    - receive_coil: Head_32
+                      table_position: -1250
+                message: |
+                    Session: {SESSION}
+                    Series: {SERIES}
+                    Table Position: {TABLE_POSITION}
+
+                    Detected an issue with the table position.
+
+                    1. Slide the table position to home.
+                    2. Realign to isocenter with laser.
+                    3. Delete all scans currently in the queue.
+                    4. Rerun localizer and scout, pull over entire protocal again.
+            coil_elements:
+                bad:
+                    - receive_coil: Head_32
+                      coil_elements:  HEA
+                    - receive_coil: Head_32
+                      coil_elements: HEP
+                    - receive_coil: HeadNeck_64
+                      coil_elements: HC2,4,6,7;NC2
+                    - receive_coil: HeadNeck_64
+                      coil_elements: HC2,4,6,7
+                message: |
+                    Session: {SESSION}
+                    Series: {SERIES}
+                    Coil: {RECEIVE_COIL}, {COIL_ELEMENTS}
+                
+                    Detected an issue with head coil elements.
+
+                    1. Check head coil connection for debris or other obstructions.
+                    2. Reconnect head coil securely.
+                    3. Ensure that anterior and posterior coil elements are present.
