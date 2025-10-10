@@ -78,6 +78,14 @@ services:
           create mode = 0660
           directory mode = 0770
           vfs objects = catia fruit
+        [vnav]
+          path = /data/vnav
+          read only = no
+          writable = yes
+          browsable = yes
+          create mode = 0660
+          directory mode = 0770
+          vfs objects = catia fruit
     volumes:
       - ${INCOMING_DIR}:/data
     profiles: [samba]
