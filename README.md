@@ -1,10 +1,14 @@
 # Scanbuddy
 
-Scanbuddy is an fMRI motion plotting software that allows users to see motion estimates at the time of scan acquisition. Scanbuddy also computes an SNR estimate for the scan. Scanbuddy is written in python and has been containerized to work across platforms, though it was developed for Linux. Scanbuddy must be run on a machine independent from the scanner host computer. SAMBA should be used to stream data from the scanner to the Scanbuddy machine. 
+Scanbuddy is an fMRI motion plotting software that allows users to see motion estimates at the time of scan acquisition. Scanbuddy also computes an SNR estimate for the scan and can be configured to check for irregular head coil elements. Scanbuddy is written in python and has been containerized to work across platforms, though it has only been implemented on Linux and MacOS. Scanbuddy must be run on a machine independent from the scanner host computer. SAMBA should be used to stream data from the scanner to the Scanbuddy machine. 
 
 Scanbuddy watches a user-specified folder for creation of an interior incoming folder. When created, it watches *that* folder for DICOM images. Each time one appears, it plots motion data on a web page (by default at `localhost:8080`) suitable for showing full time in the MR control room.
 
 Whenever a DICOM from a new series is seen, all data from the previous series is discarded.
+
+# Citation
+
+Please cite Scanbuddy with: Asay et al., (2025). Scanbuddy: fMRI motion plotting and SNR estimation at scan acquisition. Journal of Open Source Software, 10(113), 8119, https://doi.org/10.21105/joss.08119
 
 # Installation and Usage
 
