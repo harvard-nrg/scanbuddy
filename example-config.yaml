@@ -103,3 +103,8 @@ modalities:
                     1. Check head coil connection for debris or other obstructions.
                     2. Reconnect head coil securely.
                     3. Ensure that anterior and posterior coil elements are present.
+slackbot:
+    token: NULL
+    url: https://slack.com/api/chat.postMessage
+    channel: CHANNEL_NAME
+    text: 
