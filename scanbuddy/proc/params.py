@@ -102,7 +102,7 @@ class Params:
         seq = seq[(0x0021, 0x11fe)][0]
         return seq[(0x0021, 0x114f)].value
 
-    def send_slack_message(message):
+    def send_slack_message(self, message):
         token = self._slack['token']
         url = self._slack['url']
         data = {
