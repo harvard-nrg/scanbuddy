@@ -23,6 +23,7 @@ modalities:
                     - receive_coil: HeadNeck_64
                       coil_elements: HC2,4,6,7
                 message: |
+                    Project: {PROJECT}
                     Session: {SESSION}
                     Series: {SERIES}
                     Coil: {RECEIVE_COIL}, {COIL_ELEMENTS}
@@ -39,6 +40,7 @@ modalities:
                     - receive_coil: Head_32
                       table_position: -1250
                 message: |
+                    Project: {PROJECT}
                     Session: {SESSION}
                     Series: {SERIES}
                     Table Position: {TABLE_POSITION}
@@ -56,6 +58,7 @@ modalities:
                     - receive_coil: Head_32
                       table_position: -1250
                 message: |
+                    Project: {PROJECT}
                     Session: {SESSION}
                     Series: {SERIES}
                     Table Position: {TABLE_POSITION}
@@ -73,6 +76,7 @@ modalities:
                     - receive_coil: Head_32
                       table_position: -1250
                 message: |
+                    Project: {PROJECT}
                     Session: {SESSION}
                     Series: {SERIES}
                     Table Position: {TABLE_POSITION}
@@ -94,6 +98,7 @@ modalities:
                     - receive_coil: HeadNeck_64
                       coil_elements: HC2,4,6,7
                 message: |
+                    Project: {PROJECT}
                     Session: {SESSION}
                     Series: {SERIES}
                     Coil: {RECEIVE_COIL}, {COIL_ELEMENTS}
@@ -103,3 +108,7 @@ modalities:
                     1. Check head coil connection for debris or other obstructions.
                     2. Reconnect head coil securely.
                     3. Ensure that anterior and posterior coil elements are present.
+slackbot:
+    token: YOUR_TOKEN
+    url: DEFAULT
+    channel: CHANNEL_NAME
