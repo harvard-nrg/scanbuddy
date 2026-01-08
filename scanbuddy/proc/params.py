@@ -1,8 +1,8 @@
 import os
 import json
 import logging
-import requests
 from pubsub import pub
+from urllib import request
 
 logger = logging.getLogger(__name__)
 
@@ -39,6 +39,7 @@ class Params:
             f(ds, args)
 
     def coil_elements(self, ds, args):
+        project_name = ds.get('StudyDescription', 'UNKNOWN PROJECT')
         patient_name = ds.get('PatientName', 'UNKNOWN PATIENT')
         series_number = ds.get('SeriesNumber', 'UNKNOWN SERIES')
         instance_number = ds.get('InstanceNumber', 'UNKNOWN INSTANCE')
@@ -47,6 +48,7 @@ class Params:
         receive_coil = self.findcoil(ds)
         coil_elements = self.findcoilelements(ds)
         message = args['message'].format(
+            PROJECT=project_name,
             SESSION=patient_name,
             SERIES=series_number,
             RECEIVE_COIL=receive_coil,
@@ -64,6 +66,7 @@ class Params:
                 break
 
     def table_position(self, ds, args):
+        project_name = ds.get('StudyDescription', 'UNKNOWN PROJECT')
         patient_name = ds.get('PatientName', 'UNKNOWN PATIENT')
         series_number = ds.get('SeriesNumber', 'UNKNOWN SERIES')
         instance_number = ds.get('InstanceNumber', 'UNKNOWN INSTANCE')
@@ -72,6 +75,7 @@ class Params:
         table_position = self.find_table_position(ds)
         receive_coil = self.findcoil(ds)
         message = args['message'].format(
+            PROJECT=project_name,
             SESSION=patient_name,
             SERIES=series_number,
             TABLE_POSITION=table_position,
@@ -104,7 +108,9 @@ class Params:
 
     def send_slack_message(self, message):
         token = self._slack['token']
-        url = self._slack['url']
+        if token == 'YOUR_TOKEN':
+            return
+        url = 'https://slack.com/api/chat.postMessage' if self._slack['url'] == 'DEFAULT' else self._slack['url']
         data = {
             'channel': self._slack['channel'],
             'text': message
@@ -114,4 +120,6 @@ class Params:
         req.add_header('Authorization', f'Bearer {token}')
         req.add_header('Content-Type', 'application/json')
         r = request.urlopen(req)
-        logger.debug(f'slack response status {r.status}')
+        logger.info(f'slack response status {r.status}')
+        if r.status == 200:
+            logger.info('successfully posted message to slack')
