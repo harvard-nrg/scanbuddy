@@ -18,7 +18,7 @@
 # -- Project information -----------------------------------------------------
 
 project = 'Scanbuddy'
-copyright = '2025, info@neuroinfo.org'
+copyright = '2026, info@neuroinfo.org'
 author = 'info@neuroinfo.org'
 
 latex_elements = {
