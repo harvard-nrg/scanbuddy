@@ -109,6 +109,7 @@ class Params:
     def send_slack_message(self, message):
         token = self._slack['token']
         if token == 'YOUR_TOKEN':
+            logger.warning('Please replace "YOUR_TOKEN" with your slackbot token in your scanbuddy.yaml config file')
             return
         url = 'https://slack.com/api/chat.postMessage' if self._slack['url'] == 'DEFAULT' else self._slack['url']
         data = {
@@ -123,3 +124,5 @@ class Params:
         logger.info(f'slack response status {r.status}')
         if r.status == 200:
             logger.info('successfully posted message to slack')
+        else:
+            logger.error('unable to post message to slack. please verify slackbot information')
