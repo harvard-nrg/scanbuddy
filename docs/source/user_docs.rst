@@ -12,12 +12,12 @@ Let's start with what Scanbuddy is all about. fMRI is a powerful research and cl
 
 To combat subject motion and optimize data quality, motion-correcting software algorithms can be employed in the post-processing stage, as well as data deletion and imputation methods. However, there are instances of subject motion being severe enough to make the dataset unusable. This is where Scanbuddy comes in! Scanbuddy produces motion plots to be viewed by researchers at the time of data acquisition, appearing on screen at the conclusion of fMRI scans. Individual researchers will determine acceptable motion standards. Seeing motion plots at acquisition can help researchers decide if a scan should be re-acquired. You no longer have to wait until data processing to get an idea of how much your subject has or has not moved.
 
-Scanbuddy also provides an estimate of the Signal-to-Noise Ratio (SNR) with the motion plots to give researchers an idea of overall data quality. Scanbuddy does not save motion plots by default and does not store data on its host machine. Scanbuddy will create a new motion plot and compute a new SNR metric for every fMRI scan acquired. Scanbuddy also supports multi-echo BOLD scans with the assumption that the second echo time (TE2) is the TE of interest. Scanbuddy also checks for common errors involving head coils and table position. For example, if the headcoil is not plugged in completely Scanbuddy will notify the users with a red WARNING screen to notify them. Similarly, if the table position was configured incorrectly, Scanbuddy will display a red WARNING screen notifying the user. Scanbuddy is containerized with Docker and is available on Github Container Registry.
+Scanbuddy also provides an estimate of the Signal-to-Noise Ratio (SNR) with the motion plots to give researchers an idea of overall data quality. Scanbuddy does not save motion plots by default and does not store data on its host machine. Scanbuddy will create a new motion plot and compute a new SNR metric for every fMRI scan acquired. Scanbuddy also supports multi-echo BOLD scans with the assumption that the second echo time (TE2) is the TE of interest. Scanbuddy also checks for common errors involving head coils and table position. For example, if the headcoil is not plugged in completely Scanbuddy will notify the users with a red WARNING screen to notify them. Similarly, if the table position was configured incorrectly, Scanbuddy will display a red WARNING screen notifying the user. Scanbuddy is containerized with Docker and is available on GitHub Container Registry.
 
 
 What You Will Need
 ^^^^^^^^^^^^^^^^^^
-Scanbuddy should be run on a standalone machine (separate from the scanner host PC) that runs either MacOS or Linux. Users should have sudo privileges. We've used several distributions of Linux in development (ubuntu, debian, asahi) and all have run Scanbuddy successfully. The Scanbuddy machine should have 16 GB of RAM if possible; it may still work with less memory depending on the size of the data being acquired. The machine should be capable of running a web browser and Docker. You will also need a monitor to connect to the machine to display the motion plots. As an additional safety measure, the computer that you're running Scanbuddy on should be plugged into a surge protector.
+Scanbuddy should be run on a standalone machine (separate from the scanner host PC) that runs either macOS or Linux. Users should have sudo privileges. We've used several distributions of Linux in development (ubuntu, debian, asahi) and all have run Scanbuddy successfully. The Scanbuddy machine should have 16 GB of RAM if possible; it may still work with less memory depending on the size of the data being acquired. The machine should be capable of running a web browser and Docker. You will also need a monitor to connect to the machine to display the motion plots. As an additional safety measure, the computer that you're running Scanbuddy on should be plugged into a surge protector.
 
 .. note::
      
@@ -27,11 +27,11 @@ Scanbuddy should be run on a standalone machine (separate from the scanner host 
 
 Two Installation Options
 ^^^^^^^^^^^^^^^^^^^^^^^^
-Scanbuddy can be installed and run two different ways. Users can either install each component individually (samba, redis, etc.) or via docker compose, which runs all services as docker containers. Docker compose is simpler, but advanced users may be interested in having more direct control over each service. See below for installation instructions for both approaches.
+Scanbuddy can be installed and run two different ways. Users can either install each component individually (samba, redis, etc.) or via Docker Compose, which runs all services as docker containers. Docker Compose is simpler, but advanced users may be interested in having more direct control over each service. See below for installation instructions for both approaches.
 
 Installing via Docker Compose
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Installing and running Scanbuddy via docker compose has only been tested on MacOS by the developers, though it's likely it will work on Linux as well. Check out an installation video for `docker compose here <https://youtu.be/JbkHnK4dlpo>`_.
+Installing and running Scanbuddy via Docker Compose has only been tested on MacOS by the developers, though it's likely it will work on Linux as well. Check out an installation video for `Docker Compose here <https://youtu.be/JbkHnK4dlpo>`_.
 
 .. note::
     Please note that if you choose to install Scanbuddy via Docker Compose you will still need to install and test the `dot plugin <#configuring-the-plugin>`_ as well.
@@ -56,7 +56,7 @@ Create the directory you want to share over Samba and set ownership to a system 
      sudo mkdir -p /data/folder
      sudo chown username:group /data/folder
 
-If you are using SE Linux, you will need to make sure this directory is accessible to Samba:
+If you are using SELinux, you will need to make sure this directory is accessible to Samba:
 
 .. code-block:: shell
     
@@ -150,7 +150,7 @@ When you click "Enable Auto Export" you should see several more fields appear. T
 
 Building the Container Image
 """"""""""""""""""""""""""""
-Scanbuddy is packaged up in a Docker container to abstract away the hassle of installing the specific software it needs. Hurray for Docker! We've built and pushed the Docker image to Github Container Repository so you can run ``docker pull`` to build it on your local (Scanbuddy) machine. Take a look at this page to pull the latest version: `Scanbuddy image <https://github.com/harvard-nrg/scanbuddy/pkgs/container/scanbuddy>`_.
+Scanbuddy is packaged up in a Docker container to abstract away the hassle of installing the specific software it needs. Hurray for Docker! We've built and pushed the Docker image to GitHub Container Repository so you can run ``docker pull`` to build it on your local (Scanbuddy) machine. Take a look at this page to pull the latest version: `Scanbuddy image <https://github.com/harvard-nrg/scanbuddy/pkgs/container/scanbuddy>`_.
 
 Build the container by running:
 
@@ -201,33 +201,127 @@ In addition to motion plotting and SNR calculation, Scanbuddy will also check yo
 
 .. code-block:: yaml
 
-     app:
-         title: fMRI Motion
-         session_secret:
-             env: SCANBUDDY_SESSION_KEY
-         auth:
-             user: scanbuddy
-             pass:
-                 env: SCANBUDDY_PASS
-     params:
-         coil_elements:
-             bad:
-                 - receive_coil: Head_32
-                   coil_elements:  HEA
-                 - receive_coil: Head_32
-                   coil_elements: HEP
-             message: |
-                 Session: {SESSION}
-                 Series: {SERIES}
-                 Coil: {RECEIVE_COIL}, {COIL_ELEMENTS}
-                 
-                 Detected an issue with head coil elements.     
+        app:
+            title: Scanbuddy
+            session_secret:
+                env: SCANBUDDY_SESSION_KEY
+            auth:
+                user: scanbuddy
+                pass:
+                    env: SCANBUDDY_PASS
+            debug_display: true
+        modalities:
+            bold:
+                params:
+                    coil_elements:
+                        bad:
+                            - receive_coil: Head_32
+                              coil_elements:  HEA
+                            - receive_coil: Head_32
+                              coil_elements: HEP
+                            - receive_coil: HeadNeck_64
+                              coil_elements: HC2,4,6,7;NC2
+                            - receive_coil: HeadNeck_64
+                              coil_elements: HC2,4,6,7
+                        message: |
+                            Project: {PROJECT}
+                            Session: {SESSION}
+                            Series: {SERIES}
+                            Coil: {RECEIVE_COIL}, {COIL_ELEMENTS}
+                        
+                            Detected an issue with head coil elements.      
 
-                 1. Check head coil connection for debris or other obstructions.
-                 2. Reconnect head coil securely.
-                 3. Ensure that anterior and posterior coil elements are present.
+                            1. Check head coil connection for debris or other obstructions.
+                            2. Reconnect head coil securely.
+                            3. Ensure that anterior and posterior coil elements are present.            
 
-Feel free to adjust the config file however you need! It should be a ``.yaml`` file. You can also look at this example on `github <https://github.com/harvard-nrg/scanbuddy/blob/main/example-config.yaml>`_.
+                            Call 867-5309 for further assistance.
+                    table_position:
+                        bad:
+                            - receive_coil: Head_32
+                              table_position: -1250
+                        message: |
+                            Project: {PROJECT}
+                            Session: {SESSION}
+                            Series: {SERIES}
+                            Table Position: {TABLE_POSITION}        
+
+                            Detected an issue with the table position.      
+
+                            1. Slide the table position to home.
+                            2. Re-align to iso-center with laser.
+                            3. Delete all scans currently in the queue.
+                            4. Re-run localizer and scout, pull over protocol again.
+            localizer:
+                params:
+                    table_position:
+                        bad:
+                            - receive_coil: Head_32
+                              table_position: -1250
+                        message: |
+                            Project: {PROJECT}
+                            Session: {SESSION}
+                            Series: {SERIES}
+                            Table Position: {TABLE_POSITION}        
+
+                            Detected an issue with the table position.      
+
+                            1. Slide the table position to home.
+                            2. Realign to isocenter with laser.
+                            3. Delete all scans currently in the queue.
+                            4. Rerun localizer and scout, pull over entire protocol again.
+            vnav:
+                params:
+                    table_position:
+                        bad:
+                            - receive_coil: Head_32
+                              table_position: -1250
+                        message: |
+                            Project: {PROJECT}
+                            Session: {SESSION}
+                            Series: {SERIES}
+                            Table Position: {TABLE_POSITION}        
+
+                            Detected an issue with the table position.      
+
+                            1. Slide the table position to home.
+                            2. Realign to isocenter with laser.
+                            3. Delete all scans currently in the queue.
+                            4. Rerun localizer and scout, pull over entire protocal again.
+                    coil_elements:
+                        bad:
+                            - receive_coil: Head_32
+                              coil_elements:  HEA
+                            - receive_coil: Head_32
+                              coil_elements: HEP
+                            - receive_coil: HeadNeck_64
+                              coil_elements: HC2,4,6,7;NC2
+                            - receive_coil: HeadNeck_64
+                              coil_elements: HC2,4,6,7
+                        message: |
+                            Project: {PROJECT}
+                            Session: {SESSION}
+                            Series: {SERIES}
+                            Coil: {RECEIVE_COIL}, {COIL_ELEMENTS}
+                        
+                            Detected an issue with head coil elements.      
+
+                            1. Check head coil connection for debris or other obstructions.
+                            2. Reconnect head coil securely.
+                            3. Ensure that anterior and posterior coil elements are present.
+        slackbot:
+            token: YOUR_TOKEN
+            url: DEFAULT
+            channel: CHANNEL_NAME
+
+Feel free to adjust the config file however you need! It must be a ``.yaml`` file. Also available to view on `GitHub <https://github.com/harvard-nrg/scanbuddy/blob/main/example-config.yaml>`_.
+
+Warning Notification with Slackbot
+""""""""""""""""""""""""""""""""""
+Scanbuddy also supports warning monitoring with Slack. Users can add a Slackbot API token to their scanbuddy.yaml config file (generate a token `here <https://api.slack.com/apps>`_) and Scanbuddy will send warning messages for table position errors or bad coils (or anything else you add to your config file) via Slack. 
+
+Replace ``YOUR_TOKEN`` with your unique Slackbot API token. Scanbuddy interprets  ``url: DEFAULT`` as ``url: https://slack.com/api/chat.postMessage``. Users can leave it as is in the config file but it remains dynamic in the event Slack makes changes to their Slackbot system. Replace ``CHANNEL_NAME`` with the Slack workspace channel the bot should send warning messages to. Users who oversee a scanning center with multiple labs may find this feature particularly useful.
+
 
 Scanbuddy Command and Arguments
 """""""""""""""""""""""""""""""
@@ -299,7 +393,7 @@ The motion shown is volume-to-volume, meaning that the amount of motion shown in
 
 The "Motion Metrics" table shows data that may be of interest to users. The table calls users' attention to large motion artifacts with the "Movements > .5 mm" and "Movements > 1 mm" rows. Additionally, Scanbuddy provides a preliminary SNR metric estimation. See the `technical appendix <technical_appendix.html>`_ for details on SNR calculation.
 
-And that's Scanbuddy! Reach out to info@neuroinfo.org with any additional questions or comments. See also: `Scanbuddy github repository <https://github.com/harvard-nrg/scanbuddy>`_
+And that's Scanbuddy! Reach out to info@neuroinfo.org with any additional questions or comments. See also: `Scanbuddy GitHub repository <https://github.com/harvard-nrg/scanbuddy>`_
 
 
 
