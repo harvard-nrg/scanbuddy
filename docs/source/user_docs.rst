@@ -287,7 +287,7 @@ In addition to motion plotting and SNR calculation, Scanbuddy will also check yo
                             1. Slide the table position to home.
                             2. Realign to isocenter with laser.
                             3. Delete all scans currently in the queue.
-                            4. Rerun localizer and scout, pull over entire protocal again.
+                            4. Rerun localizer and scout, pull over entire protocol again.
                     coil_elements:
                         bad:
                             - receive_coil: Head_32
