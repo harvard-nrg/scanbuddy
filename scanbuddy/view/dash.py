@@ -147,184 +147,6 @@ class View:
             }
         )   
 
-        '''
-        metrics_card = dbc.Card(
-            [
-                dbc.CardBody(
-                    [
-                        html.H5(
-                            "Motion Metrics", 
-                            className="card-title", 
-                            style={
-                                "borderBottom": "1px solid black", 
-                                "marginBottom": "0px", 
-                                "textAlign": "center", 
-                                "padding": "1rem",
-                                "fontSize": "1.5vw"
-                            }
-                        ),
-                        dbc.Row(
-                            [
-                                dbc.Col(
-                                    "Number of Volumes", 
-                                    width=8,
-                                    style={
-                                        "borderRight": "1px solid black", 
-                                        "borderBottom": "1px solid black", 
-                                        "display": "flex", 
-                                        "alignItems": "center", 
-                                        "justifyContent": "flex-end",
-                                        "paddingRight": "5px",
-                                        "fontSize": "1.1vw"
-                                    }
-                                ),
-                                dbc.Col(
-                                    id='number-of-vols', 
-                                    children="0", 
-                                    width=4, 
-                                    style={
-                                        "borderBottom": "1px solid black", 
-                                        "textAlign": "center", 
-                                        "padding": "1rem",
-                                        "fontSize": "1.5vw"
-                                    }
-                                )
-                            ],
-                            style={"margin": "0px"}
-                        ),
-                        dbc.Row(
-                            [
-                                dbc.Col(
-                                    "Movements > .5 mm", 
-                                    width=8,
-                                    style={
-                                        "borderRight": "1px solid black", 
-                                        "borderBottom": "1px solid black", 
-                                        "display": "flex", 
-                                        "alignItems": "center", 
-                                        "justifyContent": "flex-end",
-                                        "paddingRight": "5px",
-                                        "fontSize": "1.1vw"
-                                    }
-                                ),
-                                dbc.Col(
-                                    id='movements-05mm', 
-                                    children="0", 
-                                    width=4, 
-                                    style={
-                                        "borderBottom": "1px solid black", 
-                                        "textAlign": "center", 
-                                        "padding": "1rem",
-                                        "fontSize": "2vw"
-                                    }
-                                )
-                            ],
-                            style={"margin": "0px"}
-                        ),
-                        dbc.Row(
-                            [
-                                dbc.Col(
-                                    "Movements > 1 mm", 
-                                    width=8, 
-                                    style={
-                                        "borderRight": "1px solid black", 
-                                        "borderBottom": "1px solid black", 
-                                        "display": "flex", 
-                                        "alignItems": "center", 
-                                       "justifyContent": "flex-end",
-                                        "paddingRight": "5px",
-                                        "fontSize": "1.1vw"
-                                    }
-                                ),
-                                dbc.Col(
-                                    id='movements-1mm', 
-                                    children="0", 
-                                    width=4, 
-                                    style={
-                                        "borderBottom": "1px solid black", 
-                                        "textAlign": "center", 
-                                        "padding": "1rem",
-                                        "fontSize": "2vw"
-                                    }
-                                )
-                            ],
-                            style={"margin": "0px"}
-                        ),
-                        dbc.Row(
-                            [
-                                dbc.Col(
-                                    "Max Abs. Motion", 
-                                    width=8, 
-                                    style={
-                                        "borderRight": "1px solid black", 
-                                        "textAlign": "right", 
-                                        "display": "flex", 
-                                        "alignItems": "center", 
-                                        "justifyContent": "flex-end",
-                                        "paddingRight": "5px",
-                                        "fontSize": "1.2vw",
-                                        "borderBottom": "1px solid black"
-                                    }
-                                ),
-                                dbc.Col(
-                                    id='max-abs-motion', 
-                                    children="0", 
-                                    width=4, 
-                                    style={
-                                        "borderBottom": "1px solid black", 
-                                        "textAlign": "center", 
-                                        "padding": "1rem",
-                                        "fontSize": "1.25vw"
-                                    }
-                                )
-                            ],
-                            style={"margin": "0px"}
-                        ),
-                        dbc.Row(
-                            [
-                                dbc.Col(
-                                    "SNR", 
-                                    width=8, 
-                                    style={
-                                        "borderRight": "1px solid black", 
-                                        "textAlign": "center", 
-                                        "display": "flex", 
-                                        "alignItems": "center", 
-                                        "justifyContent": "flex-end",
-                                        "paddingRight": "5px",
-                                        "fontSize": "1.5vw",
-                                        "borderBottom": "1px solid black"
-                                    }
-                                ),
-                                dbc.Col(
-                                    id='snr', 
-                                    children="0", 
-                                    width=4, 
-                                    style={
-                                        "borderBottom": "1px solid black", 
-                                        "textAlign": "center", 
-                                        "padding": "1rem",
-                                        "fontSize": "1.25vw"
-                                    }
-                                )
-                            ],
-                            style={"margin": "0px"}
-                        ),
-                    ],
-                    style={"border": "1px solid black", "padding": "0"}
-                ''
-                )
-            ],
-            style={
-                "width": "16vw", 
-                "maxWidth": "16vw", 
-                "border": "1px solid black", 
-                "backgroundColor": "#ffe4e1", 
-                "margin": "1rem"
-            }
-        )
-
-        '''
         LEFT_COLUMN_WIDTH = "85%"
         RIGHT_COLUMN_WIDTH = "85%"
         BG_COLOR = "#e0f7fa"  # Light blue background
@@ -397,7 +219,10 @@ class View:
                     dbc.Col(
                         metrics_table,
                         style={
-                            'margin': '10px'
+                            'padding': '10px',
+                            'flex': '0 0 auto',
+                            'width': '245px',
+                            'minWidth': '245px',
                         }
                     ),
                     dbc.Col(
@@ -405,10 +230,13 @@ class View:
                             displacements_graph,
                             rotations_graph,
                         ],
-                        width=10
+                        style={
+                            'minWidth': '0',
+                            'flex': '1 1 auto',
+                        }
                     ),
                 ],
-                className="g-0"
+                className="g-0 flex-nowrap"
             ),
             html.Dialog(
                 id='bsod-dialog',
@@ -468,7 +296,8 @@ class View:
                 id='message-interval-component',
                 interval=1 * 1000
             )
-        ])
+        ],
+        style={'overflowX': 'auto'})
 
 
     def init_callbacks(self):
