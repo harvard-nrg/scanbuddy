@@ -207,7 +207,7 @@ class View:
             bordered=True,
             striped=True,
             style={
-                'fontSize': '3.0vh',
+                'fontSize': 'clamp(11px, 1.4vw, 1000px)',
                 'backgroundColor': BG_COLOR
             }
         )
@@ -221,8 +221,7 @@ class View:
                         style={
                             'padding': '10px',
                             'flex': '0 0 auto',
-                            'width': '245px',
-                            'minWidth': '245px',
+                            'width': 'clamp(160px, 15vw, 10000px)'
                         }
                     ),
                     dbc.Col(
