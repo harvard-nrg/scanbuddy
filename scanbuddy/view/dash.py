@@ -221,7 +221,7 @@ class View:
                         style={
                             'padding': '10px',
                             'flex': '0 0 auto',
-                            'width': 'clamp(160px, 15vw, 10000px)'
+                            'width': 'clamp(260px, 15vw, 10000px)'
                         }
                     ),
                     dbc.Col(
