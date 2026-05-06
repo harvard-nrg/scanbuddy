@@ -1,16 +1,16 @@
 import os
 import sys
 import dash
-import redis
+import time
 import random
 import secrets
 import logging
+import dash_auth
 import pandas as pd
 from pubsub import pub
 import plotly.express as px
-import dash_auth
-from dash import Dash, html, dcc, callback, Output, Input, State
 import dash_bootstrap_components as dbc
+from dash import Dash, html, dcc, callback, Output, Input, State
 
 logger = logging.getLogger(__name__)
 
@@ -36,11 +36,6 @@ class View:
         self._num_warnings = 0
         self._instances = dict()
         self._current_snr = 0.0
-        self._redis_client = redis.StrictRedis(
-            host=broker.host,
-            port=broker.port,
-            db=0
-        )
         self.init_app()
         self.init_page()
         self.init_callbacks()
@@ -221,7 +216,7 @@ class View:
                         style={
                             'padding': '10px',
                             'flex': '0 0 auto',
-                            'width': 'clamp(260px, 15vw, 10000px)'
+                            'width': 'clamp(300px, 15vw, 10000px)'
                         }
                     ),
                     dbc.Col(
@@ -294,6 +289,11 @@ class View:
             dcc.Interval(
                 id='message-interval-component',
                 interval=1 * 1000
+            ),
+            dcc.Store(
+                id='client-store',
+                storage_type='local',
+                data={'seen': []}
             )
         ],
         style={'overflowX': 'auto'})
@@ -311,7 +311,9 @@ class View:
             Output('bsod-dialog', 'open', allow_duplicate=True),
             Output('bsod-content', 'children', allow_duplicate=True),
             Output('notification-badge', 'children'),
+            Output('client-store', 'data'),
             Input('message-interval-component', 'n_intervals'),
+            State('client-store', 'data'),
             prevent_initial_call=True
         )(self.check_messages)
 
@@ -331,22 +333,36 @@ class View:
             Input('plot-interval-component', 'n_intervals'),
         )(self.update_metrics)
 
-    def check_messages(self, n_intervals):
-        try:
-            message = self._redis_client.get('scanbuddy_messages')
-            logger.info(f'there are currently {len(message) if message is not None else 0} scanbuddy messages')
-            if message:
-                self._num_warnings += 1
-                self._redis_client.delete('scanbuddy_messages')
-                decoded_message = message.decode()
-                message = self._redis_client.get('scanbuddy_messages')
-                logger.info('there should be 0 scanbuddy messages')
-                logger.info(f'actual number of scanbuddy messages: {len(message) if message is not None else 0}')
-                return True, decoded_message, self._num_warnings
-        except redis.exceptions.ConnectionError as e:
-            logger.warning(f'unable to get messages from message broker, service unavailable')
+    def check_messages(self, n_intervals, store_data):
+        if store_data is None:
+            store_data = {'seen': []}
 
-        return dash.no_update,dash.no_update,dash.no_update
+        try:
+            all_messages = self._broker.get_all_messages()
+            current_keys = set(all_messages.keys())
+            seen = set(store_data.get('seen', []))
+
+            updated_seen = seen.intersection(current_keys)
+
+            unseen_keys = current_keys - updated_seen
+            unseen_messages = [all_messages[key] for key in unseen_keys]
+
+            if unseen_messages:
+                updated_seen.update(unseen_keys)
+                store_data['seen'] = list(updated_seen)
+                self._num_warnings += len(unseen_messages)
+                combined_message = '\n\n---\n\n'.join(unseen_messages)
+                return True, combined_message, self._num_warnings, store_data
+
+            if updated_seen != seen:
+                store_data['seen'] = list(updated_seen)
+                return dash.no_update, dash.no_update, dash.no_update, store_data
+
+        except Exception as e:
+            logger.warning(f'unable to get messages from message broker: {e}')
+
+        return dash.no_update, dash.no_update, dash.no_update, dash.no_update
+
 
     def close_bsod(self, n_clicks):
         return False, 'Hello, World!'

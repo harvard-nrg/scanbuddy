@@ -1,5 +1,6 @@
 import os
 import json
+import uuid
 import logging
 from pubsub import pub
 from urllib import request
@@ -61,7 +62,7 @@ class Params:
             if a == b:
                 logger.warning(message)
                 logger.info(f'publishing message to message broker')
-                self._broker.publish('scanbuddy_messages', message)
+                self._broker.publish(str(uuid.uuid4().hex), message)
                 self.send_slack_message(message)
                 break
 
@@ -87,7 +88,7 @@ class Params:
             if a == b:
                 logger.warning(message)
                 logger.info('publishing message to message broker')
-                self._broker.publish('scanbuddy_messages', message)
+                self._broker.publish(str(uuid.uuid4().hex), message)
                 self.send_slack_message(message)
                 break
 
