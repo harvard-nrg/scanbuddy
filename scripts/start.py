@@ -18,7 +18,10 @@ from scanbuddy.common import print_platform_info
 from scanbuddy.watcher.directory import DirectoryWatcher,DirectoryWatcherError
 
 logger = logging.getLogger('main')
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s %(levelname)s %(name)s %(message)s'
+)
 
 def main():
     parser = ArgumentParser()
