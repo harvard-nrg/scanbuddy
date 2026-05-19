@@ -2,6 +2,7 @@ import os
 import json
 import uuid
 import logging
+from datetime import datetime
 from pubsub import pub
 from urllib import request
 
@@ -62,7 +63,15 @@ class Params:
             if a == b:
                 logger.warning(message)
                 logger.info(f'publishing message to message broker')
-                self._broker.publish(str(uuid.uuid4().hex), message)
+                payload = json.dumps({
+                    'timestamp': datetime.now().astimezone().isoformat(),
+                    'project': str(project_name),
+                    'session': str(patient_name),
+                    'series': str(series_number),
+                    'error_type': 'Head Coil Issue',
+                    'message': message
+                })
+                self._broker.publish(str(uuid.uuid4().hex), payload)
                 self.send_slack_message(message)
                 break
 
@@ -88,7 +97,15 @@ class Params:
             if a == b:
                 logger.warning(message)
                 logger.info('publishing message to message broker')
-                self._broker.publish(str(uuid.uuid4().hex), message)
+                payload = json.dumps({
+                    'timestamp': datetime.now().astimezone().isoformat(),
+                    'project': str(project_name),
+                    'session': str(patient_name),
+                    'series': str(series_number),
+                    'error_type': 'Table Position Error',
+                    'message': message
+                })
+                self._broker.publish(str(uuid.uuid4().hex), payload)
                 self.send_slack_message(message)
                 break
 
