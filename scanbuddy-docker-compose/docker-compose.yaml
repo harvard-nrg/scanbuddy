@@ -5,6 +5,7 @@ services:
     depends_on:
       - scanbuddy-broker
     environment:
+      TZ: ${TZ:-America/New_York}
       SCANBUDDY_PASS: ${SCANBUDDY_PASS}
       SCANBUDDY_SESSION_KEY: ${SCANBUDDY_SESSION_KEY}
     user: ${UID}:${GID}
@@ -89,4 +90,3 @@ services:
     volumes:
       - ${INCOMING_DIR}:/data
     profiles: [samba]
-
