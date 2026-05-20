@@ -286,6 +286,7 @@ class View:
                     'padding': 0,
                     'margin': 0,
                     'textAlign': 'center',
+                    'zIndex': 1100,
                 }
             ),
             dcc.Interval(
