@@ -1,5 +1,6 @@
 import os
 import sys
+import json
 import dash
 import time
 import random
@@ -7,6 +8,8 @@ import secrets
 import logging
 import dash_auth
 import pandas as pd
+from collections import deque
+from datetime import datetime
 from pubsub import pub
 import plotly.express as px
 import dash_bootstrap_components as dbc
@@ -33,9 +36,10 @@ class View:
         self._debug = self._config.find_one('$.app.debug', default=debug)
         self._title = self._config.find_one('$.app.title', default='Scanbuddy')
         self._subtitle = 'Ready'
-        self._num_warnings = 0
         self._instances = dict()
         self._current_snr = 0.0
+        self._warning_history = deque(maxlen=15)
+        self._history_keys = set()
         self.init_app()
         self.init_page()
         self.init_callbacks()
@@ -45,6 +49,8 @@ class View:
     def init_app(self):
         self._app = Dash(
             self._title,
+            title=self._title,
+            update_title=None,
             external_stylesheets=[
                 dbc.themes.BOOTSTRAP
             ]
@@ -280,6 +286,7 @@ class View:
                     'padding': 0,
                     'margin': 0,
                     'textAlign': 'center',
+                    'zIndex': 1100,
                 }
             ),
             dcc.Interval(
@@ -294,6 +301,22 @@ class View:
                 id='client-store',
                 storage_type='local',
                 data={'seen': []}
+            ),
+            dbc.Offcanvas(
+                id='notifications-sidebar',
+                title='Warning History',
+                placement='end',
+                is_open=False,
+                style={'width': '450px'},
+                children=[
+                    html.Div(
+                        id='notifications-list',
+                        style={
+                            'overflowY': 'auto',
+                            'maxHeight': '85vh'
+                        }
+                    )
+                ]
             )
         ],
         style={'overflowX': 'auto'})
@@ -333,26 +356,60 @@ class View:
             Input('plot-interval-component', 'n_intervals'),
         )(self.update_metrics)
 
+        self._app.callback(
+            Output('notifications-sidebar', 'is_open'),
+            Output('notifications-list', 'children'),
+            Output('notification-badge', 'children', allow_duplicate=True),
+            Output('client-store', 'data', allow_duplicate=True),
+            Input('notifications-button', 'n_clicks'),
+            State('notifications-sidebar', 'is_open'),
+            State('client-store', 'data'),
+            prevent_initial_call=True
+        )(self.toggle_notifications_sidebar)
+
     def check_messages(self, n_intervals, store_data):
         if store_data is None:
-            store_data = {'seen': []}
+            store_data = {'seen': [], 'unread_count': 0, 'initialized': False}
 
         try:
             all_messages = self._broker.get_all_messages()
             current_keys = set(all_messages.keys())
             seen = set(store_data.get('seen', []))
 
+            if not store_data.get('initialized', False):
+                store_data['seen'] = list(current_keys)
+                store_data['unread_count'] = 0
+                store_data['initialized'] = True
+                for key, raw in all_messages.items():
+                    if key not in self._history_keys:
+                        self._history_keys.add(key)
+                        parsed = self._parse_warning(raw)
+                        self._warning_history.appendleft(parsed)
+                return dash.no_update, dash.no_update, None, store_data
+
             updated_seen = seen.intersection(current_keys)
 
             unseen_keys = current_keys - updated_seen
-            unseen_messages = [all_messages[key] for key in unseen_keys]
 
-            if unseen_messages:
+            if unseen_keys:
                 updated_seen.update(unseen_keys)
                 store_data['seen'] = list(updated_seen)
-                self._num_warnings += len(unseen_messages)
-                combined_message = '\n\n---\n\n'.join(unseen_messages)
-                return True, combined_message, self._num_warnings, store_data
+
+                display_messages = []
+                for key in unseen_keys:
+                    raw = all_messages[key]
+                    parsed = self._parse_warning(raw)
+                    if key not in self._history_keys:
+                        self._history_keys.add(key)
+                        self._warning_history.appendleft(parsed)
+                    display_messages.append(parsed.get('message', raw))
+                combined_message = '\n\n---\n\n'.join(display_messages)
+
+                unread = store_data.get('unread_count', 0) + len(unseen_keys)
+                store_data['unread_count'] = unread
+
+                badge = unread if unread > 0 else None
+                return True, combined_message, badge, store_data
 
             if updated_seen != seen:
                 store_data['seen'] = list(updated_seen)
@@ -366,6 +423,72 @@ class View:
 
     def close_bsod(self, n_clicks):
         return False, 'Hello, World!'
+
+    def _parse_warning(self, raw):
+        try:
+            data = json.loads(raw)
+            if isinstance(data, dict) and 'timestamp' in data:
+                return data
+        except (json.JSONDecodeError, TypeError):
+            pass
+        return {
+            'timestamp': datetime.now().astimezone().isoformat(),
+            'project': 'Unknown',
+            'session': 'Unknown',
+            'series': 'Unknown',
+            'error_type': 'Warning',
+            'message': raw
+        }
+
+    def _render_warning_cards(self):
+        if not self._warning_history:
+            return html.P(
+                'No warnings yet.',
+                style={'color': '#666', 'textAlign': 'center', 'marginTop': '20px'}
+            )
+        cards = []
+        for warning in self._warning_history:
+            try:
+                ts = datetime.fromisoformat(warning['timestamp'])
+                time_str = ts.strftime('%b %d, %Y  %I:%M:%S %p')
+            except (ValueError, KeyError):
+                time_str = 'Unknown time'
+
+            card = dbc.Card([
+                dbc.CardHeader(
+                    html.Span(
+                        warning.get('error_type', 'Warning'),
+                        style={'fontWeight': 'bold', 'color': '#d32f2f'}
+                    )
+                ),
+                dbc.CardBody([
+                    html.Small(time_str, className='text-muted d-block mb-2'),
+                    html.Div([
+                        html.Span('Project: ', style={'fontWeight': 'bold'}),
+                        html.Span(warning.get('project', 'Unknown'))
+                    ]),
+                    html.Div([
+                        html.Span('Session: ', style={'fontWeight': 'bold'}),
+                        html.Span(warning.get('session', 'Unknown'))
+                    ]),
+                    html.Div([
+                        html.Span('Series: ', style={'fontWeight': 'bold'}),
+                        html.Span(warning.get('series', 'Unknown'))
+                    ]),
+                ])
+            ], className='mb-2', style={'fontSize': '0.9rem'})
+            cards.append(card)
+        return cards
+
+    def toggle_notifications_sidebar(self, n_clicks, is_open, store_data):
+        if store_data is None:
+            store_data = {'seen': [], 'unread_count': 0}
+
+        if not is_open:
+            store_data['unread_count'] = 0
+            cards = self._render_warning_cards()
+            return True, cards, None, store_data
+        return False, dash.no_update, dash.no_update, dash.no_update
 
     def update_graphs(self, n):
         df = self.todataframe()
