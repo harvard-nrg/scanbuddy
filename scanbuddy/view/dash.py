@@ -39,6 +39,7 @@ class View:
         self._instances = dict()
         self._current_snr = 0.0
         self._warning_history = deque(maxlen=15)
+        self._history_keys = set()
         self.init_app()
         self.init_page()
         self.init_callbacks()
@@ -378,29 +379,32 @@ class View:
                 store_data['seen'] = list(current_keys)
                 store_data['unread_count'] = 0
                 store_data['initialized'] = True
-                for raw in all_messages.values():
-                    parsed = self._parse_warning(raw)
-                    if parsed not in list(self._warning_history):
+                for key, raw in all_messages.items():
+                    if key not in self._history_keys:
+                        self._history_keys.add(key)
+                        parsed = self._parse_warning(raw)
                         self._warning_history.appendleft(parsed)
                 return dash.no_update, dash.no_update, None, store_data
 
             updated_seen = seen.intersection(current_keys)
 
             unseen_keys = current_keys - updated_seen
-            unseen_messages = [all_messages[key] for key in unseen_keys]
 
-            if unseen_messages:
+            if unseen_keys:
                 updated_seen.update(unseen_keys)
                 store_data['seen'] = list(updated_seen)
 
                 display_messages = []
-                for raw in unseen_messages:
+                for key in unseen_keys:
+                    raw = all_messages[key]
                     parsed = self._parse_warning(raw)
-                    self._warning_history.appendleft(parsed)
+                    if key not in self._history_keys:
+                        self._history_keys.add(key)
+                        self._warning_history.appendleft(parsed)
                     display_messages.append(parsed.get('message', raw))
                 combined_message = '\n\n---\n\n'.join(display_messages)
 
-                unread = store_data.get('unread_count', 0) + len(unseen_messages)
+                unread = store_data.get('unread_count', 0) + len(unseen_keys)
                 store_data['unread_count'] = unread
 
                 badge = unread if unread > 0 else None
