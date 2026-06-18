@@ -1,0 +1,14 @@
+/Users/danielasay/rust_scanbuddy/scanbuddy_snr/target/release/deps/pyo3_build_config-a10cbc7f0a1e5055.d: /Users/danielasay/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/pyo3-build-config-0.23.5/src/lib.rs /Users/danielasay/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/pyo3-build-config-0.23.5/src/errors.rs /Users/danielasay/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/pyo3-build-config-0.23.5/src/impl_.rs /Users/danielasay/rust_scanbuddy/scanbuddy_snr/target/release/build/pyo3-build-config-1bfcb51e3ea389cf/out/pyo3-build-config-file.txt /Users/danielasay/rust_scanbuddy/scanbuddy_snr/target/release/build/pyo3-build-config-1bfcb51e3ea389cf/out/pyo3-build-config.txt
+
+/Users/danielasay/rust_scanbuddy/scanbuddy_snr/target/release/deps/libpyo3_build_config-a10cbc7f0a1e5055.rlib: /Users/danielasay/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/pyo3-build-config-0.23.5/src/lib.rs /Users/danielasay/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/pyo3-build-config-0.23.5/src/errors.rs /Users/danielasay/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/pyo3-build-config-0.23.5/src/impl_.rs /Users/danielasay/rust_scanbuddy/scanbuddy_snr/target/release/build/pyo3-build-config-1bfcb51e3ea389cf/out/pyo3-build-config-file.txt /Users/danielasay/rust_scanbuddy/scanbuddy_snr/target/release/build/pyo3-build-config-1bfcb51e3ea389cf/out/pyo3-build-config.txt
+
+/Users/danielasay/rust_scanbuddy/scanbuddy_snr/target/release/deps/libpyo3_build_config-a10cbc7f0a1e5055.rmeta: /Users/danielasay/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/pyo3-build-config-0.23.5/src/lib.rs /Users/danielasay/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/pyo3-build-config-0.23.5/src/errors.rs /Users/danielasay/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/pyo3-build-config-0.23.5/src/impl_.rs /Users/danielasay/rust_scanbuddy/scanbuddy_snr/target/release/build/pyo3-build-config-1bfcb51e3ea389cf/out/pyo3-build-config-file.txt /Users/danielasay/rust_scanbuddy/scanbuddy_snr/target/release/build/pyo3-build-config-1bfcb51e3ea389cf/out/pyo3-build-config.txt
+
+/Users/danielasay/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/pyo3-build-config-0.23.5/src/lib.rs:
+/Users/danielasay/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/pyo3-build-config-0.23.5/src/errors.rs:
+/Users/danielasay/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/pyo3-build-config-0.23.5/src/impl_.rs:
+/Users/danielasay/rust_scanbuddy/scanbuddy_snr/target/release/build/pyo3-build-config-1bfcb51e3ea389cf/out/pyo3-build-config-file.txt:
+/Users/danielasay/rust_scanbuddy/scanbuddy_snr/target/release/build/pyo3-build-config-1bfcb51e3ea389cf/out/pyo3-build-config.txt:
+
+# env-dep:CARGO_PKG_VERSION=0.23.5
+# env-dep:OUT_DIR=/Users/danielasay/rust_scanbuddy/scanbuddy_snr/target/release/build/pyo3-build-config-1bfcb51e3ea389cf/out

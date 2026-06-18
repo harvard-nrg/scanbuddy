@@ -1,0 +1,11 @@
+implementation=CPython
+version=3.12
+shared=true
+abi3=false
+lib_name=python3.12
+lib_dir=/opt/homebrew/opt/python@3.12/Frameworks/Python.framework/Versions/3.12/lib
+executable=/Users/danielasay/venvs/general/bin/python
+pointer_width=64
+build_flags=
+python_framework_prefix=/opt/homebrew/opt/python@3.12/Frameworks
+suppress_build_script_link_lines=false
