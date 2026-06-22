@@ -1,3 +1,31 @@
+# Stage 1: build the scanbuddy_snr Rust extension
+FROM rockylinux:8 AS rust-builder
+
+RUN dnf install -y epel-release && \
+    dnf install -y gcc make openssl-devel perl-IPC-Cmd curl && \
+    dnf clean all
+
+# install Rust toolchain
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+ENV PATH="/root/.cargo/bin:${PATH}"
+
+# install miniforge and create free-threaded Python env for maturin
+ARG MFG_PREFIX="/sw/miniforge"
+RUN curl -sL "https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-$(uname -m).sh" -o /tmp/miniforge.sh && \
+    bash /tmp/miniforge.sh -b -p "${MFG_PREFIX}" && \
+    rm /tmp/miniforge.sh
+ENV PATH="${MFG_PREFIX}/bin:${PATH}"
+RUN conda create -y -n python3.13t --override-channels -c conda-forge python-freethreading=3.13.1
+RUN /sw/miniforge/envs/python3.13t/bin/pip install maturin numpy
+
+# build the wheel
+COPY rust_snr_calculation /tmp/rust_snr_calculation
+WORKDIR /tmp/rust_snr_calculation
+RUN rm -rf target && \
+    /sw/miniforge/envs/python3.13t/bin/maturin build --release \
+        --interpreter /sw/miniforge/envs/python3.13t/bin/python3
+
+# Stage 2: final image
 FROM rockylinux:8
 
 # install EPEL repository and base packages
@@ -60,5 +88,10 @@ RUN mamba create -y -n python3.13t --override-channels -c conda-forge python-fre
 RUN mamba env config vars set PYTHON_GIL=0 -n python3.13t
 COPY . /tmp/scanbuddy
 RUN mamba run -n python3.13t --no-capture-output python3 -m pip install /tmp/scanbuddy
+
+# install the pre-built scanbuddy_snr wheel from the builder stage
+COPY --from=rust-builder /tmp/rust_snr_calculation/target/wheels/*.whl /tmp/
+RUN mamba run -n python3.13t --no-capture-output python3 -m pip install /tmp/scanbuddy_snr*.whl && \
+    rm /tmp/*.whl
 
 ENTRYPOINT ["mamba", "run", "-n", "python3.13t", "--no-capture-output", "start.py"]

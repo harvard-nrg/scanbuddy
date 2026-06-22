@@ -14,12 +14,22 @@ import collections as c
 from pathlib import Path
 from sortedcontainers import SortedDict
 
+try:
+    from scanbuddy_snr import compute_snr as _rust_compute_snr
+    _USE_RUST_SNR = True
+except (ImportError, AttributeError):
+    _USE_RUST_SNR = False
+
 logger = logging.getLogger(__name__)
 
 class SNR:
     def __init__(self):
         pub.subscribe(self.listener, 'snr')
         self._debug_display = True
+        if _USE_RUST_SNR:
+            logger.info('using Rust SNR backend (scanbuddy_snr)')
+        else:
+            logger.info('using Python SNR backend (Rust module not available)')
 
     def listener(self, key, snr_instances, ds):
         logger.info('received tasks for snr calculation')
@@ -107,6 +117,15 @@ class SNR:
                 pub.sendMessage('plot_snr', snr_metric=snr_metric) 
 
     def calc_snr(self, key):
+        if _USE_RUST_SNR:
+            logger.info('CALCULATING SNR WITH RUST 🦀')
+            data = self._fdata_array[:, :, :, :key - 4]
+            return _rust_compute_snr(data, self._mask_threshold)
+        else:
+            return self._calc_snr_python(key)
+
+    def _calc_snr_python(self, key):
+        logger.info('CALCULATING SNR WITH PYTHON 🐍')
         slice_intensity_means, slice_voxel_counts, data = self.get_mean_slice_intensities(key)
 
         non_zero_columns = ~np.all(slice_intensity_means == 0, axis=0)
@@ -116,7 +135,7 @@ class SNR:
         slice_count = slice_intensity_means_2.shape[0]
         volume_count = slice_intensity_means_2.shape[1]
 
-        
+
         slice_weighted_mean_mean = 0
         slice_weighted_stdev_mean = 0
         slice_weighted_snr_mean = 0
@@ -139,7 +158,7 @@ class SNR:
             total_voxel_count += slice_voxel_count
 
             logger.debug(f"Slice {slice_idx}: Mean={slice_mean}, StdDev={slice_stdev}, SNR={slice_snr}")
-        
+
         return slice_weighted_snr_mean / total_voxel_count
 
     def get_mean_slice_intensities(self, key):
