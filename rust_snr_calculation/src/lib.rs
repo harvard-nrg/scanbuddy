@@ -31,7 +31,7 @@ fn compute_snr<'py>(
         return Ok(f64::NAN);
     }
 
-    let result = py.allow_threads(|| {
+    let result = py.detach(|| {
         let mut total_weighted_snr: f64 = 0.0;
         let mut total_voxel_count: u64 = 0;
 
