@@ -15,15 +15,15 @@ RUN curl -sL "https://github.com/conda-forge/miniforge/releases/latest/download/
     bash /tmp/miniforge.sh -b -p "${MFG_PREFIX}" && \
     rm /tmp/miniforge.sh
 ENV PATH="${MFG_PREFIX}/bin:${PATH}"
-RUN conda create -y -n python3.13t --override-channels -c conda-forge python-freethreading=3.13.1
-RUN /sw/miniforge/envs/python3.13t/bin/pip install maturin numpy
+RUN conda create -y -n python3.14t --override-channels -c conda-forge python-freethreading=3.14
+RUN /sw/miniforge/envs/python3.14t/bin/pip install maturin numpy
 
 # build the wheel
 COPY rust_snr_calculation /tmp/rust_snr_calculation
 WORKDIR /tmp/rust_snr_calculation
 RUN rm -rf target && \
-    /sw/miniforge/envs/python3.13t/bin/maturin build --release \
-        --interpreter /sw/miniforge/envs/python3.13t/bin/python3
+    /sw/miniforge/envs/python3.14t/bin/maturin build --release \
+        --interpreter /sw/miniforge/envs/python3.14t/bin/python3
 
 # Stage 2: final image
 FROM rockylinux:8
@@ -84,14 +84,14 @@ ENV PATH="${MFG_PREFIX}/bin:${PATH}"
 RUN conda install -y -n base -c conda-forge mamba=1.5.12
 
 # install scanbuddy with python-freethreading
-RUN mamba create -y -n python3.13t --override-channels -c conda-forge python-freethreading=3.13.1
-RUN mamba env config vars set PYTHON_GIL=0 -n python3.13t
+RUN mamba create -y -n python3.14t --override-channels -c conda-forge python-freethreading=3.14
+RUN mamba env config vars set PYTHON_GIL=0 -n python3.14t
 COPY . /tmp/scanbuddy
-RUN mamba run -n python3.13t --no-capture-output python3 -m pip install /tmp/scanbuddy
+RUN mamba run -n python3.14t --no-capture-output python3 -m pip install /tmp/scanbuddy
 
 # install the pre-built scanbuddy_snr wheel from the builder stage
 COPY --from=rust-builder /tmp/rust_snr_calculation/target/wheels/*.whl /tmp/
-RUN mamba run -n python3.13t --no-capture-output python3 -m pip install /tmp/scanbuddy_snr*.whl && \
+RUN mamba run -n python3.14t --no-capture-output python3 -m pip install /tmp/scanbuddy_snr*.whl && \
     rm /tmp/*.whl
 
-ENTRYPOINT ["mamba", "run", "-n", "python3.13t", "--no-capture-output", "start.py"]
+ENTRYPOINT ["mamba", "run", "-n", "python3.14t", "--no-capture-output", "start.py"]
