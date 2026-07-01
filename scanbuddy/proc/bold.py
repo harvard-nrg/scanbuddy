@@ -38,13 +38,19 @@ class BoldProcessor:
         logger.info('inside of the bold-proc topic')
         self._modality = modality
         key = int(ds.InstanceNumber)
+
+        ### Check if the data is multi-echo
         is_multi_echo, is_TE2 = self.check_echo(ds)
         if is_multi_echo is True and is_TE2 is False:
+            # if it is multi-echo but wrong echo-time, delete file and return. do not process
             os.remove(path)
             return
         if is_multi_echo:
             key = self.get_new_key(key)
             logger.info(f'new multi-echo key: {key}')
+
+        # check if the dicom is a 'noise' volume
+        if self.check_noise(ds, key): return
         self._instances[key] = {
             'path': path,
             'volreg': None,
@@ -146,6 +152,21 @@ class BoldProcessor:
             logger.debug('making sure snr arrays are deallocated')
         self._fdata_array = None
         self._slice_intensity_means = None
+
+    def check_noise(self, ds, vol_number):
+        '''
+        Checks the dicom header for 'NOISE' in the Siemens
+        private header. If the string 'NOISE' is present,
+        do not process that dicom.
+        '''
+        sequence = ds[(0x5200, 0x9230)][0]
+        siemens_private_tag = sequence[(0x0021, 0x11fe)][0]
+        scan_string = str(siemens_private_tag[(0x0021, 0x1175)].value)
+        if 'NOISE' in scan_string:
+            logger.info(f'Volume {vol_number} found to be a noise volume. Not processing.')
+            return True
+        return False
+
 
     def check_echo(self, ds):
         '''
